@@ -16,8 +16,8 @@ TSP::TSP(double ***mPointer, int dimension){
     //Preenchendo o vetor solucao viavelmente
     initialRoute();
     
-    //swap();
-    //revert();
+    // swap();
+    // revert();
     reinsert(3);
 }
 
@@ -163,29 +163,19 @@ void TSP::reinsert(int num){
     printSolution();
 
     for(int i = 1; i < dimension - (num-1); i++){
-        for(int j = 0; j < dimension - num; j++){
+        for(int j = 0; j < dimension - num; j++){ //O j comeca em zero pois o i sera inserido numa posicao a frente do j
             //Checando se ele esta dentro do intervalo que sera movimentado
             if(j+1 == i){
-                j += num; //num-1 pq tem o j++ do for
+                j += num;
                 continue;
             }
 
             delta =  matrix[route[j]][route[i]]
                     +matrix[route[i+(num-1)]][route[j+1]]
-                    +matrix[route[i-1]][route[route[i+num]]]
+                    +matrix[route[i-1]][route[i+num]]
                     -matrix[route[i-1]][route[i]]
                     -matrix[route[i+(num-1)]][route[i+num]]
                     -matrix[route[j]][route[j+1]];
-
-            std::cout << "INSERTING " << route[i] << " -> " << route[i+(num-1)] << " AFTER " << route[j]
-                      << "\nCost:  " << route[j] << " -> " << route[i] << " : " << matrix[route[j]][route[i]] << "\n"
-                      << "     + " << route[i+(num-1)] << " -> " << route[j+1] << " : " << matrix[route[i+(num-1)]][route[j+1]] << "\n"
-                      << "     + " << route[i-1] << " -> " << route[i+num] << " : " << matrix[route[i-1]][route[route[i+num]]] << "\n"
-                      << "     - " << route[i-1] << " -> " << route[i] << " : " << matrix[route[i-1]][route[i]] << "\n"
-                      << "     - " << route[i+(num-1)] << " -> " << route[i+num] << " : " << matrix[route[i+(num-1)]][route[i+num]] << "\n"
-                      << "     - " << route[j] << " -> " << route[j+1] << " : " << matrix[route[j]][route[j+1]] << "\n"
-                      << "Total: " << delta << "\n\n";
-                      
             
             if(bestReinsertion.delta > delta){
                 bestReinsertion.i = i;
@@ -194,20 +184,18 @@ void TSP::reinsert(int num){
             }
         }
     }
-
-    printf("REINSERT %d\n", num);
-    printSolution();
-    printf("Nodes: (%d-%d) -> %d\nCost: %f + (%f)\n", route[bestReinsertion.i], route[bestReinsertion.i+(num-1)], route[bestReinsertion.j], cost, bestReinsertion.delta);
     
     if(bestReinsertion.delta < 0){
         cost = cost + bestReinsertion.delta;
 
         std::vector<int> subroute(route.begin() + bestReinsertion.i, route.begin() + bestReinsertion.i + num);
         route.erase(route.begin() + bestReinsertion.i, route.begin() + bestReinsertion.i + num);
-        route.insert(route.begin() + (bestReinsertion.j+1), subroute.begin(), subroute.end());
+
+        if(bestReinsertion.i > bestReinsertion.j)
+            route.insert(route.begin() + (bestReinsertion.j+1), subroute.begin(), subroute.end());
+        else
+            route.insert(route.begin() + bestReinsertion.j-(num-1), subroute.begin(), subroute.end());
     }
-    printSolution();
-    printf("\n");
 }
 
 void TSP::printSolution(){
