@@ -5,9 +5,10 @@ TSP::TSP(double ***mPointer, int dimension){
     this->dimension = dimension;
     cost = 0;
 
+    candidateList.resize(dimension);
     //Preenchendo a lista de candidatos
-    for(int i = 1; i <= dimension; i++){
-        candidateList.push_back(i);
+    for(int i = 0; i < dimension; i++){
+        candidateList[i] = i+1;
     }
     
     //Criando um subtour inicial
@@ -16,9 +17,41 @@ TSP::TSP(double ***mPointer, int dimension){
     //Preenchendo o vetor solucao viavelmente
     initialRoute();
     
-    // swap();
-    // revert();
-    reinsert(3);
+    //RVND
+    std::vector<char> neighborList(5);
+    for(int i = 0; i < NEIGHBORLIST_SIZE; i++)
+        neighborList[i] = i+1;
+
+    while(!neighborList.empty()){
+        int j = random(neighborList.size())-1;
+        switch(neighborList[j]){
+            case 1:
+                swap();
+                neighborList.erase(neighborList.begin() + j);
+                break;
+
+            case 2:
+                revert();
+                neighborList.erase(neighborList.begin() + j);
+                break;
+
+            case 3:
+                reinsert(1);
+                neighborList.erase(neighborList.begin() + j);
+                break;
+
+            case 4:
+                reinsert(2);
+                neighborList.erase(neighborList.begin() + j);
+                break;
+
+            case 5:
+                reinsert(3);
+                neighborList.erase(neighborList.begin() + j);
+                break;
+                
+        }
+    }
 }
 
 int TSP::random(int num){
@@ -159,8 +192,6 @@ void TSP::revert(){
 void TSP::reinsert(int num){
     tMove bestReinsertion = {0, 0, INFINITY};
     double delta;
-
-    printSolution();
 
     for(int i = 1; i < dimension - (num-1); i++){
         for(int j = 0; j < dimension - num; j++){ //O j comeca em zero pois o i sera inserido numa posicao a frente do j
