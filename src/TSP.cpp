@@ -5,11 +5,12 @@ TSP::TSP(double ***mPointer, int dimension){
     this->dimension = dimension;
     cost = 0;
 
+    int i;
+
     candidateList.resize(dimension);
     //Preenchendo a lista de candidatos
-    for(int i = 0; i < dimension; i++){
+    for(i = 0; i < dimension; i++)
         candidateList[i] = i+1;
-    }
     
     //Criando um subtour inicial
     subtour();
@@ -18,36 +19,36 @@ TSP::TSP(double ***mPointer, int dimension){
     initialRoute();
     
     //RVND
-    std::vector<char> neighborList(5);
-    for(int i = 0; i < NEIGHBORLIST_SIZE; i++)
+    std::vector<char> neighborList(NEIGHBORLIST_SIZE);
+    for(i = 0; i < NEIGHBORLIST_SIZE; i++)
         neighborList[i] = i+1;
 
     while(!neighborList.empty()){
-        int j = random(neighborList.size())-1;
+        i = random(neighborList.size())-1;
         switch(neighborList[j]){
             case 1:
-                swap();
-                neighborList.erase(neighborList.begin() + j);
+                if(!swap())
+                    neighborList.erase(neighborList.begin() + i);
                 break;
 
             case 2:
-                revert();
-                neighborList.erase(neighborList.begin() + j);
+                if(!revert())
+                    neighborList.erase(neighborList.begin() + i);
                 break;
 
             case 3:
-                reinsert(1);
-                neighborList.erase(neighborList.begin() + j);
+                if(!reinsert(1))
+                    neighborList.erase(neighborList.begin() + i);
                 break;
 
             case 4:
-                reinsert(2);
-                neighborList.erase(neighborList.begin() + j);
+                if(!reinsert(2))
+                    neighborList.erase(neighborList.begin() + i);
                 break;
 
             case 5:
-                reinsert(3);
-                neighborList.erase(neighborList.begin() + j);
+                if(!reinsert(3))
+                    neighborList.erase(neighborList.begin() + i);
                 break;
                 
         }
@@ -125,7 +126,7 @@ void TSP::initialRoute(){
     }
 }
 
-void TSP::swap(){
+bool TSP::swap(){
     //Criando um movimento de swap com delta infito, a fim de nao pegar lixo de memoria, e nao bugar o if
     tMove bestSwap = {0, 0, INFINITY};
     double delta;
@@ -161,10 +162,13 @@ void TSP::swap(){
     if(bestSwap.delta < 0){
         cost = cost + bestSwap.delta;
         std::swap(route[bestSwap.i], route[bestSwap.j]);
+        return true;
     }
+
+    return false;
 }
 
-void TSP::revert(){
+bool TSP::revert(){
     tMove bestReversion = {0, 0, INFINITY};
     double delta;
 
@@ -186,10 +190,13 @@ void TSP::revert(){
     if(bestReversion.delta < 0){
         cost = cost + bestReversion.delta;
         std::reverse(route.begin() + bestReversion.i, route.begin() + bestReversion.j+1);
+        return true;
     }
+
+    return false;
 }
 
-void TSP::reinsert(int num){
+bool TSP::reinsert(int num){
     tMove bestReinsertion = {0, 0, INFINITY};
     double delta;
 
@@ -226,7 +233,11 @@ void TSP::reinsert(int num){
             route.insert(route.begin() + (bestReinsertion.j+1), subroute.begin(), subroute.end());
         else
             route.insert(route.begin() + bestReinsertion.j-(num-1), subroute.begin(), subroute.end());
+        
+        return true;
     }
+
+    return false;
 }
 
 void TSP::printSolution(){
