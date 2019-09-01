@@ -10,7 +10,7 @@ TSP::TSP(double ***mPointer, int dimension){
     candidateList.resize(dimension);
     //Preenchendo a lista de candidatos
     for(i = 0; i < dimension; i++)
-        candidateList[i] = i+1;
+        candidateList[i] = i;
     
     //Criando um subtour inicial
     subtour();
@@ -25,7 +25,7 @@ TSP::TSP(double ***mPointer, int dimension){
 
     while(!neighborList.empty()){
         i = random(neighborList.size())-1;
-        switch(neighborList[j]){
+        switch(neighborList[i]){
             case 1:
                 if(!swap())
                     neighborList.erase(neighborList.begin() + i);
@@ -242,7 +242,7 @@ bool TSP::reinsert(int num){
 
 void TSP::printSolution(){
     for(int i = 0; i < route.size(); i++)
-        printf("%d%s", route[i], i+1 == route.size()?"\n":", ");
+        printf("%d%s", route[i]+1, i+1 == route.size()?"\n":", ");
 }
 
 double TSP::getCost(){
@@ -261,9 +261,9 @@ double TSP::getRealCost(){
 
 void TSP::printMatrix(){
     printf("Dimension: %d\n", dimension);
-    for(int i = 1; i <= dimension; i++){
-        for(int j = 1; j <= dimension; j++){
-            char endian = ((j+1)>dimension) ? '\n' : ' ';
+    for(int i = 0; i < dimension; i++){
+        for(int j = 0; j < dimension; j++){
+            char endian = ((j+1)==dimension) ? '\n' : ' ';
             std::cout <<  matrix[i][j] << endian;
         }
     }

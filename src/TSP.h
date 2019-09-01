@@ -10,38 +10,40 @@
 #include <limits>
 
 #define SUBTOUR_SIZE 3
+#define NEIGHBORLIST_SIZE 5
 #define INFINITY std::numeric_limits<double>::infinity()
 
 typedef struct move{
-        int i, j;
-        double delta;
-        bool operator<(const move& other) const{
-            return delta < other.delta;
-        }
+     int i, j;
+     double delta;
+     bool operator<(const move& other) const{
+          return delta < other.delta;
+     }
 }tMove;
 
 class TSP{
-    double **matrix, cost;
-    int dimension;
-    std::vector<int> route, candidateList;
+     double **matrix, cost;
+     int dimension;
+     std::vector<int> route, candidateList;
     
-    void subtour(),
-         initialRoute(),
-         swap(),
-         revert(),
-         reinsert(int num);
+     void subtour(),
+          initialRoute();
 
-    int random(int num);
+     bool swap(),
+          revert(),
+          reinsert(int num);
+         
+     int random(int num);
 
-    public:
-        TSP(double ***mPointer, int dimension);
+     public:
+          TSP(double ***mPointer, int dimension);
 
-        void printSolution(),
-             printMatrix();
+          void printSolution(),
+               printMatrix();
 
-        double getCost(),
-               getRealCost(),
-               getRealCost(int size);
+          double getCost(),
+                 getRealCost(),
+                 getRealCost(int size);
 };
 
 #endif // TSP_H
