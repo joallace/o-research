@@ -72,7 +72,7 @@ void TSP::subtour(){
 
     //Inserindo-o na solucao e removendo-o da lista de candidatos
     route.push_back(first);
-    candidateList.erase(candidateList.begin() + first-1);
+    candidateList.erase(candidateList.begin() + first);
 
     //Inserindo itens aleatorios da lista de candidatos na solucao
     for(int i = 0; i < SUBTOUR_SIZE; i++){

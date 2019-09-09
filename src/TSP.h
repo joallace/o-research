@@ -3,9 +3,6 @@
 
 #include <vector>
 #include <iostream>
-#include <cstdio>
-#include <cstdlib>
-#include <ctime>
 #include <algorithm>
 #include <limits>
 
