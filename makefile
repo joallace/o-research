@@ -1,3 +1,4 @@
+
 #detecta se o sistema é de 32 ou 64 bits
 BITS_OPTION = -m64
 
@@ -7,6 +8,10 @@ CPPC = g++
 
 #### opcoes de compilacao e includes
 CCOPT = $(BITS_OPTION) -O3 -fPIC -fexceptions -DNDEBUG -DIL_STD -std=c++0x
+CONCERTINCDIR = $(CONCERTDIR)/include
+#############################
+
+#### flags do linker
 #############################
 
 #### diretorios com os source files e com os objs files
@@ -32,9 +37,9 @@ tsp: $(OBJS)
 #cada arquivo objeto depende do .c e dos headers (informacao dos header esta no arquivo de dependencias gerado pelo compiler)
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@echo  "\033[31m \nCompiling $<: \033[0m"
-	$(CPPC) $(CCFLAGS) -g -c $< -o $@
+	$(CPPC) $(CCFLAGS) -c $< -o $@
 	@echo  "\033[32m \ncreating $< dependency file: \033[0m"
-	$(CPPC) -std=c++0x -g -MM $< > $(basename $@).d
+	$(CPPC) -std=c++0x  -MM $< > $(basename $@).d
 	@mv -f $(basename $@).d $(basename $@).d.tmp #proximas tres linhas colocam o diretorio no arquivo de dependencias (g++ nao coloca, surprisingly!)
 	@sed -e 's|.*:|$(basename $@).o:|' < $(basename $@).d.tmp > $(basename $@).d
 	@rm -f $(basename $@).d.tmp

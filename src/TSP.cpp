@@ -45,57 +45,54 @@ TSP::TSP(double ***mPointer, int dimension){
                 switch(neighborList[i]){
                     case 1:
                         t0 = cpuTime();
-                        if(!swap()){
-                            t1 = cpuTime();
-                            tSwap += t1-t0;
+                        if(!swap())
                             neighborList.erase(neighborList.begin() + i);
-                        }
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
+                        t1 = cpuTime();
+                        tSwap += t1-t0;
                         break;
 
                     case 2:
                         t0 = cpuTime();
-                        if(!revert()){
-                            t1 = cpuTime();
-                            tRevert += t1-t0;
+                        if(!revert())
                             neighborList.erase(neighborList.begin() + i);
-                        }
+                        
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
+                        t1 = cpuTime();
+                            tRevert += t1-t0;
                         break;
 
                     case 3:
                         t0 = cpuTime();
-                        if(!reinsert(1)){
-                            t1 = cpuTime();
-                            tReinsertion1 += t1-t0;
+                        if(!reinsert(1))
                             neighborList.erase(neighborList.begin() + i);
-                        }
+                        
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
+                        t1 = cpuTime();
+                            tReinsertion1 += t1-t0;
                         break;
 
                     case 4:
                         t0 = cpuTime();
-                        if(!reinsert(2)){
-                            t1 = cpuTime();
-                            tReinsertion2 += t1-t0;
+                        if(!reinsert(2))
                             neighborList.erase(neighborList.begin() + i);
-                        }
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
+                        t1 = cpuTime();
+                        tReinsertion2 += t1-t0;
                         break;
 
                     case 5:
                         t0 = cpuTime();
-                        if(!reinsert(3)){
-                            t1 = cpuTime();
-                            tReinsertion3 += t1-t0;
+                        if(!reinsert(3))
                             neighborList.erase(neighborList.begin() + i);
-                        }
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
+                        t1 = cpuTime();
+                        tReinsertion3 += t1-t0;
                         break;
                 }
             }
