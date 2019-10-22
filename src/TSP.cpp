@@ -7,6 +7,13 @@ TSP::TSP(double ***mPointer, int dimension){
     bestCost = INFINITY;
     
     //Defining variables
+    double t0, t1, tConstruction = 0,
+           tSwap = 0,
+           tRevert = 0,
+           tReinsertion1 = 0,
+           tReinsertion2 = 0,
+           tReinsertion3 = 0,
+           tPertub = 0;
     int i, i_ILS = dimension>=150 ? dimension/2 : dimension;
     std::vector<char> neighborList, defaultNeighborList;
 
@@ -15,6 +22,8 @@ TSP::TSP(double ***mPointer, int dimension){
 
     for(int iMax = 0; iMax < IMAX; iMax++){
         cost = 0;
+
+        t0 = cpuTime();
         //Filling up the candidate list
         for(i = 0; i < dimension; i++)
             candidateList.push_back(i);
@@ -24,6 +33,9 @@ TSP::TSP(double ***mPointer, int dimension){
 
         //Filling up the solution vector feasibly
         initialRoute();
+
+        t1 = cpuTime();
+        tConstruction += t1-t0;
         
         for(int iILS = 0; iILS < i_ILS; iILS++){
             //RVND
@@ -32,36 +44,56 @@ TSP::TSP(double ***mPointer, int dimension){
                 i = random(neighborList.size())-1;
                 switch(neighborList[i]){
                     case 1:
-                        if(!swap())
+                        t0 = cpuTime();
+                        if(!swap()){
+                            t1 = cpuTime();
+                            tSwap += t1-t0;
                             neighborList.erase(neighborList.begin() + i);
+                        }
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
                         break;
 
                     case 2:
-                        if(!revert())
+                        t0 = cpuTime();
+                        if(!revert()){
+                            t1 = cpuTime();
+                            tRevert += t1-t0;
                             neighborList.erase(neighborList.begin() + i);
+                        }
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
                         break;
 
                     case 3:
-                        if(!reinsert(1))
+                        t0 = cpuTime();
+                        if(!reinsert(1)){
+                            t1 = cpuTime();
+                            tReinsertion1 += t1-t0;
                             neighborList.erase(neighborList.begin() + i);
+                        }
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
                         break;
 
                     case 4:
-                        if(!reinsert(2))
+                        t0 = cpuTime();
+                        if(!reinsert(2)){
+                            t1 = cpuTime();
+                            tReinsertion2 += t1-t0;
                             neighborList.erase(neighborList.begin() + i);
+                        }
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
                         break;
 
                     case 5:
-                        if(!reinsert(3))
+                        t0 = cpuTime();
+                        if(!reinsert(3)){
+                            t1 = cpuTime();
+                            tReinsertion3 += t1-t0;
                             neighborList.erase(neighborList.begin() + i);
+                        }
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
                         break;
@@ -76,6 +108,12 @@ TSP::TSP(double ***mPointer, int dimension){
         }
         route.clear();
     }
+    std::cout << "Tempo medio de execucao da SI: " << tConstruction << " (s)";
+    std::cout << "\n" << "Tempo medio de execucao da troca: " << tSwap << " (s)";
+    std::cout << "\n" << "Tempo medio de execucao do Or-opt: " << tReinsertion1 << " (s)";
+    std::cout << "\n" << "Tempo medio de execucao do Or-opt2: " << tReinsertion2 << " (s)";
+    std::cout << "\n" << "Tempo medio de execucao do Or-opt3: " << tReinsertion3 << " (s)";
+    std::cout << "\n" << "Tempo medio de execucao do 2-opt: " << tRevert << " (s)\n\n";
 }
 
 //Just a function that returns a random number from [1, num]
@@ -281,6 +319,12 @@ void TSP::peturb(){
             +matrix[route[i+jSize]][route[i+jSize+1]]
             +((i+iSize+1 == j)? 0 : matrix[route[j + (jSize-iSize)-1]][route[j + (jSize-iSize)]])
             +matrix[route[j+jSize]][route[j+jSize+1]];
+}
+
+double TSP::cpuTime() {
+	static struct rusage usage;
+	getrusage(RUSAGE_SELF, &usage);
+	return ((double)usage.ru_utime.tv_sec)+(((double)usage.ru_utime.tv_usec)/((double)1000000));
 }
 
 void TSP::printSolution(){

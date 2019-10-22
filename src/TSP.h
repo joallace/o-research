@@ -5,6 +5,8 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <sys/timeb.h>
+#include <sys/resource.h>
 
 #define SUBTOUR_SIZE 3
 #define NEIGHBORLIST_SIZE 5
@@ -33,6 +35,8 @@ class TSP{
           reinsert(int num);
          
      int random(int num);
+
+     double cpuTime();
 
      public:
           TSP(double ***mPointer, int dimension);
