@@ -6,14 +6,16 @@ int main(int argc, char** argv) {
     int dimension; // quantidade total de vertices
     
     readData(argc, argv, &dimension, &matrizAdj);
+    
+    srand(time(NULL));
 
     TSP tsp = TSP(&matrizAdj, dimension);
 
     if(dimension < 16)
         tsp.printMatrix();
 
-    std::cout << "\nTotal cost: " << tsp.getCost() << "\nReal cost: " << tsp.getRealCost() << std::endl;
-    tsp.printSolution();
+    std::cout << "\nTotal cost: " << tsp.getCost() << "\nReal cost: " << tsp.getRealFinalCost() << std::endl;
+    tsp.printFinalSolution();
 
 
     return 0;

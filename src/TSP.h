@@ -4,12 +4,13 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
-#include <limits>
+#include <cmath>
 
 #define SUBTOUR_SIZE 3
 #define NEIGHBORLIST_SIZE 5
-#define INFINITY std::numeric_limits<double>::infinity()
+#define IMAX 50
 
+//A structure that stores the cost from a certain move involving i and j
 typedef struct move{
      int i, j;
      double delta;
@@ -19,12 +20,13 @@ typedef struct move{
 }tMove;
 
 class TSP{
-     double **matrix, cost;
+     double **matrix, cost, bestCost;
      int dimension;
-     std::vector<int> route, candidateList;
+     std::vector<int> route, bestRoute, candidateList;
     
      void subtour(),
-          initialRoute();
+          initialRoute(),
+          peturb();
 
      bool swap(),
           revert(),
@@ -36,11 +38,12 @@ class TSP{
           TSP(double ***mPointer, int dimension);
 
           void printSolution(),
+               printFinalSolution(),
                printMatrix();
 
           double getCost(),
                  getRealCost(),
-                 getRealCost(int size);
+                 getRealFinalCost();
 };
 
 #endif // TSP_H
