@@ -5,8 +5,8 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
-#include <sys/timeb.h>
-#include <sys/resource.h>
+#include <cstdio>
+#include "Timer.h"
 
 #define SUBTOUR_SIZE 3
 #define NEIGHBORLIST_SIZE 5
@@ -25,10 +25,11 @@ class TSP{
      double **matrix, cost, bestCost;
      int dimension;
      std::vector<int> route, bestRoute, candidateList;
-    
+     Timer timer;
+
      void subtour(),
           initialRoute(),
-          peturb();
+          pertub();
 
      bool swap(),
           revert(),
@@ -36,18 +37,19 @@ class TSP{
          
      int random(int num);
 
-     double cpuTime();
+     //Debugging functions
+          void printCurrentSolution();
+          double getCurrentRealCost();
 
      public:
           TSP(double ***mPointer, int dimension);
 
           void printSolution(),
-               printFinalSolution(),
+               printTimes(),
                printMatrix();
 
           double getCost(),
-                 getRealCost(),
-                 getRealFinalCost();
+                 getRealCost();
 };
 
 #endif // TSP_H

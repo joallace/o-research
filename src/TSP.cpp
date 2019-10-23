@@ -2,97 +2,76 @@
 
 TSP::TSP(double ***mPointer, int dimension){
     //Setting up
+    timer = Timer();
     matrix = *mPointer;
     this->dimension = dimension;
     bestCost = INFINITY;
     
     //Defining variables
-    double t0, t1, tConstruction = 0,
-           tSwap = 0,
-           tRevert = 0,
-           tReinsertion1 = 0,
-           tReinsertion2 = 0,
-           tReinsertion3 = 0,
-           tPertub = 0;
     int i, i_ILS = dimension>=150 ? dimension/2 : dimension;
     std::vector<char> neighborList, defaultNeighborList;
 
+    //Defining the defaultNeighborList
     for(i = 0; i < NEIGHBORLIST_SIZE; i++)
         defaultNeighborList.push_back(i+1);
 
+    //GILS
     for(int iMax = 0; iMax < IMAX; iMax++){
         cost = 0;
 
-        t0 = cpuTime();
         //Filling up the candidate list
         for(i = 0; i < dimension; i++)
             candidateList.push_back(i);
         
+        timer.setTime(0);
         //Creating a initial subtour
         subtour();
 
         //Filling up the solution vector feasibly
         initialRoute();
+        timer.setTime(0);
 
-        t1 = cpuTime();
-        tConstruction += t1-t0;
-        
+        //RVND
         for(int iILS = 0; iILS < i_ILS; iILS++){
-            //RVND
             neighborList = defaultNeighborList;
             while(!neighborList.empty()){
                 i = random(neighborList.size())-1;
                 switch(neighborList[i]){
                     case 1:
-                        t0 = cpuTime();
                         if(!swap())
                             neighborList.erase(neighborList.begin() + i);
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
-                        t1 = cpuTime();
-                        tSwap += t1-t0;
                         break;
 
                     case 2:
-                        t0 = cpuTime();
                         if(!revert())
                             neighborList.erase(neighborList.begin() + i);
                         
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
-                        t1 = cpuTime();
-                            tRevert += t1-t0;
                         break;
 
                     case 3:
-                        t0 = cpuTime();
                         if(!reinsert(1))
                             neighborList.erase(neighborList.begin() + i);
                         
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
-                        t1 = cpuTime();
-                            tReinsertion1 += t1-t0;
                         break;
 
                     case 4:
-                        t0 = cpuTime();
                         if(!reinsert(2))
                             neighborList.erase(neighborList.begin() + i);
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
-                        t1 = cpuTime();
-                        tReinsertion2 += t1-t0;
                         break;
 
                     case 5:
-                        t0 = cpuTime();
                         if(!reinsert(3))
                             neighborList.erase(neighborList.begin() + i);
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
-                        t1 = cpuTime();
-                        tReinsertion3 += t1-t0;
                         break;
                 }
             }
@@ -101,16 +80,18 @@ TSP::TSP(double ***mPointer, int dimension){
                 bestRoute = route;
                 iILS = 0;
             }
-            peturb();
+            else{
+                cost = bestCost;
+                route = bestRoute;
+            }
+
+            pertub();
         }
+
         route.clear();
     }
-    std::cout << "Tempo medio de execucao da SI: " << tConstruction << " (s)";
-    std::cout << "\n" << "Tempo medio de execucao da troca: " << tSwap << " (s)";
-    std::cout << "\n" << "Tempo medio de execucao do Or-opt: " << tReinsertion1 << " (s)";
-    std::cout << "\n" << "Tempo medio de execucao do Or-opt2: " << tReinsertion2 << " (s)";
-    std::cout << "\n" << "Tempo medio de execucao do Or-opt3: " << tReinsertion3 << " (s)";
-    std::cout << "\n" << "Tempo medio de execucao do 2-opt: " << tRevert << " (s)\n\n";
+
+    timer.stop();
 }
 
 //Just a function that returns a random number from [1, num]
@@ -183,6 +164,7 @@ bool TSP::swap(){
     tMove bestSwap = {0, 0, INFINITY};
     double delta;
 
+    timer.setTime(1);
     //Repeating until the swap with lowest delta is found
     for(int i = 1; i < dimension - 2; i++){
         for(int j = i + 1; j < dimension - 1; j++){
@@ -214,9 +196,11 @@ bool TSP::swap(){
     if(bestSwap.delta < 0){
         cost = cost + bestSwap.delta;
         std::swap(route[bestSwap.i], route[bestSwap.j]);
+        timer.setTime(1);
         return true;
     }
 
+    timer.setTime(1);
     return false;
 }
 
@@ -224,6 +208,7 @@ bool TSP::revert(){
     tMove bestReversion = {0, 0, INFINITY};
     double delta;
 
+    timer.setTime(2);
     for(int i = 1; i < dimension - 2; i++){
         for(int j = i + 2; j < dimension - 1; j++){
             delta =  matrix[route[i]][route[j+1]]
@@ -242,9 +227,11 @@ bool TSP::revert(){
     if(bestReversion.delta < 0){
         cost = cost + bestReversion.delta;
         std::reverse(route.begin() + bestReversion.i, route.begin() + bestReversion.j+1);
+        timer.setTime(2);
         return true;
     }
 
+    timer.setTime(2);
     return false;
 }
 
@@ -252,6 +239,7 @@ bool TSP::reinsert(int num){
     tMove bestReinsertion = {0, 0, INFINITY};
     double delta;
 
+    timer.setTime(2+num);
     for(int i = 1; i < dimension - (num-1); i++){
         for(int j = 0; j < dimension - num; j++){   //O j comeca em zero pois o i sera inserido numa posicao a frente do j
             //Checando se ele esta dentro do intervalo que sera movimentado
@@ -286,13 +274,15 @@ bool TSP::reinsert(int num){
         else
             route.insert(route.begin() + bestReinsertion.j-(num-1), subroute.begin(), subroute.end());
         
+        timer.setTime(2+num);
         return true;
     }
 
+    timer.setTime(2+num);
     return false;
 }
 
-void TSP::peturb(){
+void TSP::pertub(){
     int iSize = random(ceil(dimension/10.0)-1),    //min = 1 & max = dimension/10 - 1
         jSize = random(ceil(dimension/10.0)-1);
 
@@ -318,20 +308,18 @@ void TSP::peturb(){
             +matrix[route[j+jSize]][route[j+jSize+1]];
 }
 
-double TSP::cpuTime() {
-	static struct rusage usage;
-	getrusage(RUSAGE_SELF, &usage);
-	return ((double)usage.ru_utime.tv_sec)+(((double)usage.ru_utime.tv_usec)/((double)1000000));
-}
-
 void TSP::printSolution(){
-    for(int i = 0; i < route.size(); i++)
-        printf("%d%s", route[i]+1, i+1 == route.size()?"\n":", ");
-}
-
-void TSP::printFinalSolution(){
     for(int i = 0; i < bestRoute.size(); i++)
         printf("%d%s", bestRoute[i]+1, i+1 == bestRoute.size()?"\n":", ");
+}
+
+void TSP::printTimes(){
+    std::cout << "Tempo medio de execucao da SI: " << timer.getTotalTime() << " (s)\n";
+    std::cout << "Tempo medio de execucao da troca: " << timer.getSwapTime() << " (s)\n";
+    std::cout << "Tempo medio de execucao do Or-opt: " << timer.getReinsertion1Time() << " (s)\n";
+    std::cout << "Tempo medio de execucao do Or-opt2: " << timer.getReinsertion2Time() << " (s)\n";
+    std::cout << "Tempo medio de execucao do Or-opt3: " << timer.getReinsertion3Time() << " (s)\n";
+    std::cout << "Tempo medio de execucao do 2-opt: " << timer.getRevertTime() << " (s)\n\n";
 }
 
 double TSP::getCost(){
@@ -339,16 +327,6 @@ double TSP::getCost(){
 }
 
 double TSP::getRealCost(){
-    double sum = 0;
-
-    for(int i = 0; i < dimension; i++){
-        sum+= matrix[route[i]][route[i+1]];
-    }
-    
-    return sum;
-}
-
-double TSP::getRealFinalCost(){
     double sum = 0;
 
     for(int i = 0; i < dimension; i++){
@@ -367,3 +345,22 @@ void TSP::printMatrix(){
         }
     }
 }
+
+//------------============ Debugging functions ============------------
+
+void TSP::printCurrentSolution(){
+    for(int i = 0; i < route.size(); i++)
+        printf("%d%s", route[i]+1, i+1 == route.size()?"\n":", ");
+}
+
+double TSP::getCurrentRealCost(){
+    double sum = 0;
+
+    for(int i = 0; i < dimension; i++){
+        sum+= matrix[route[i]][route[i+1]];
+    }
+    
+    return sum;
+}
+
+//------------============================================------------
