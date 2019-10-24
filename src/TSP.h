@@ -5,7 +5,6 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
-#include <cstdio>
 #include "Timer.h"
 
 #define SUBTOUR_SIZE 3
@@ -22,9 +21,9 @@ typedef struct move{
 }tMove;
 
 class TSP{
-     double **matrix, cost, bestCost;
+     double **matrix, cost, bestCost, finalCost;
      int dimension;
-     std::vector<int> route, bestRoute, candidateList;
+     std::vector<int> route, bestRoute, finalRoute, candidateList;
      Timer timer;
 
      void subtour(),
@@ -38,8 +37,8 @@ class TSP{
      int random(int num);
 
      //Debugging functions
-          void printCurrentSolution();
-          double getCurrentRealCost();
+          void printCurrentSolution(bool best);   //Insert true to get the bestRoute or bestCost
+          double getCurrentRealCost(bool best);
 
      public:
           TSP(double ***mPointer, int dimension);
