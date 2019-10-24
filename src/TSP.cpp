@@ -9,11 +9,7 @@ TSP::TSP(double ***mPointer, int dimension){
     
     //Defining variables
     int i, i_ILS = dimension>=150 ? dimension/2 : dimension;
-    std::vector<char> neighborList, defaultNeighborList;
-
-    //Defining the defaultNeighborList
-    for(i = 0; i < NEIGHBORLIST_SIZE; i++)
-        defaultNeighborList.push_back(i+1);
+    std::vector<char> neighborList, defaultNeighborList = {1, 2, 3, 4, 5};
 
     //GILS
     for(int iMax = 0; iMax < IMAX; iMax++){
@@ -50,7 +46,6 @@ TSP::TSP(double ***mPointer, int dimension){
                     case 2:
                         if(!revert())
                             neighborList.erase(neighborList.begin() + i);
-                        
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
                         break;
@@ -58,7 +53,6 @@ TSP::TSP(double ***mPointer, int dimension){
                     case 3:
                         if(!reinsert(1))
                             neighborList.erase(neighborList.begin() + i);
-                        
                         else if(neighborList.size() != NEIGHBORLIST_SIZE)
                             neighborList = defaultNeighborList;
                         break;
@@ -100,7 +94,7 @@ TSP::TSP(double ***mPointer, int dimension){
 }
 
 //Just a function that returns a random number from [1, num]
-int TSP::random(int num){
+inline int TSP::random(int num){
     return (rand()%num)+1;
 }
 
@@ -278,7 +272,7 @@ bool TSP::reinsert(int num){
             s.route.insert(s.route.begin() + (bestReinsertion.j+1), subroute.begin(), subroute.end());
         else
             s.route.insert(s.route.begin() + bestReinsertion.j-(num-1), subroute.begin(), subroute.end());  //If the subsequence is inserted in a j position that is ahead of the previous(i), it is needed to correct the index after the deletion
-        
+
         timer.setTime(2+num);
         return true;
     }
@@ -319,7 +313,8 @@ void TSP::printSolution(){
 }
 
 void TSP::printTimes(){
-    std::cout << "Tempo medio de execucao da SI: " << timer.getTotalTime() << " (s)\n"
+    std::cout << "Tempo medio de execucao: " << timer.getTotalTime() << " (s)\n"
+              << "Tempo medio de execucao da SI: " << timer.getConstructionTime() << " (s)\n"
               << "Tempo medio de execucao da troca: " << timer.getSwapTime() << " (s)\n"
               << "Tempo medio de execucao do Or-opt: " << timer.getReinsertion1Time() << " (s)\n"
               << "Tempo medio de execucao do Or-opt2: " << timer.getReinsertion2Time() << " (s)\n"
