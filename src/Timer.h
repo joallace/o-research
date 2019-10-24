@@ -2,13 +2,12 @@
 #define TIMER_H
 
 #include <chrono>
-#include <bitset>
 
 using namespace std::chrono;
 
 class Timer{
     high_resolution_clock::time_point t0, t1, totalT0, totalT1;  //Variables used to measure the time delta
-    std::bitset<6> hasRun;
+    bool hasRun[6] = {};
     double construction,
            swap,
            revert,

@@ -9,8 +9,6 @@ Timer::Timer(){
     reinsertion1 =
     reinsertion2 =
     reinsertion3 = 0;
-
-    hasRun.reset();
 }
 
 void Timer::setTime(char part){
@@ -44,7 +42,7 @@ void Timer::setTime(char part){
                 break;
         }
     }
-    hasRun.flip(part);
+    hasRun[part] = !hasRun[part];
 }
 
 void Timer::stop(){
