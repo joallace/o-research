@@ -5,7 +5,7 @@ TSP::TSP(double ***mPointer, int dimension){
     timer = Timer();
     matrix = *mPointer;
     this->dimension = dimension;
-    finalCost = INFINITY;
+    final.cost = INFINITY;
     
     //Defining variables
     int i, i_ILS = dimension>=150 ? dimension/2 : dimension;
@@ -17,19 +17,21 @@ TSP::TSP(double ***mPointer, int dimension){
 
     //GILS
     for(int iMax = 0; iMax < IMAX; iMax++){
-        bestCost = INFINITY;
-        cost = 0;
+        best.cost = INFINITY;
+        s.cost = 0;
 
         //Filling up the candidate list
         for(i = 0; i < dimension; i++)
             candidateList.push_back(i);
         
         timer.setTime(0);
+
         //Creating a initial subtour
         subtour();
 
         //Filling up the solution vector feasibly
         initialRoute();
+        
         timer.setTime(0);
 
         //RVND
@@ -76,22 +78,22 @@ TSP::TSP(double ***mPointer, int dimension){
                         break;
                 }
             }
-            if(cost < bestCost){
-                bestCost = cost;
-                bestRoute = route;
+            if(s.cost < best.cost){
+                best.cost = s.cost;
+                best.route = s.route;
                 iILS = 0;
             }
             else{
-                cost = bestCost;
-                route = bestRoute;
+                s.cost = best.cost;
+                s.route = best.route;
             }
             pertub();
         }
-        if(bestCost < finalCost){
-            finalCost = bestCost;
-            finalRoute = bestRoute;
+        if(best.cost < final.cost){
+            final.cost = best.cost;
+            final.route = best.route;
         }
-        route.clear();
+        s.route.clear();
     }
 
     timer.stop();
@@ -107,20 +109,20 @@ void TSP::subtour(){
     int first = random(dimension-1);
 
     //Inserting it into the solution and removing it from the candidate list
-    route.push_back(first);
+    s.route.push_back(first);
     candidateList.erase(candidateList.begin() + first);
 
     //Inserting random items from the candidate list into the solution
     for(int i = 0; i < SUBTOUR_SIZE; i++){
         int j = random(candidateList.size()) - 1;
-        cost += matrix[route[i]][candidateList[j]];
-        route.push_back(candidateList[j]);
+        s.cost += matrix[s.route[i]][candidateList[j]];
+        s.route.push_back(candidateList[j]);
         candidateList.erase(candidateList.begin() + j);  
     }
 
     //Finishing the Hamiltonian cycle
-    route.push_back(first);
-    cost += matrix[route[SUBTOUR_SIZE]][route[SUBTOUR_SIZE+1]];
+    s.route.push_back(first);
+    s.cost += matrix[s.route[SUBTOUR_SIZE]][s.route[SUBTOUR_SIZE+1]];
 }
 
 void TSP::initialRoute(){
@@ -128,42 +130,42 @@ void TSP::initialRoute(){
     
     //Repeating until a feasible initial solution is found
     while (!candidateList.empty()){
-        //Calculating the insertion cost of each one of the remaining candidates
-        std::vector <tMove*> costVector((route.size()-2) * candidateList.size());
+        //Calculating the insertion s.cost of each one of the remaining candidates
+        std::vector <tMove*> costVector((s.route.size()-2) * candidateList.size());
 
-        for(int i = 1, k = 0; i < route.size()-1; i++){
+        for(int i = 1, k = 0; i < s.route.size()-1; i++){
             for(int j = 0; j < candidateList.size(); j++){
-                //Allocating a cost node
+                //Allocating a s.cost node
                 nextNode = (tMove*)malloc(sizeof(tMove));
 
                 //Assigning the indexes to the node members
                 nextNode->i = j;
                 nextNode->j = i;
 
-                //Calculating the insertion cost and inserting the node into the vector
-                nextNode->delta =  matrix[route[i]][candidateList[j]] 
-                                  +matrix[candidateList[j]][route[i+1]]
-                                  -matrix[route[i]][route[i+1]];
+                //Calculating the insertion s.cost and inserting the node into the vector
+                nextNode->delta =  matrix[s.route[i]][candidateList[j]] 
+                                  +matrix[candidateList[j]][s.route[i+1]]
+                                  -matrix[s.route[i]][s.route[i+1]];
 
                 costVector[k++] = nextNode;
             }
         }
     
-        //Sorting the costVector
+        //Sorting the s.costVector
         std::sort(costVector.begin(), costVector.end());
         
-        //Obtaining an item in a random interval of the costVector
+        //Obtaining an item in a random interval of the s.costVector
         nextNode = costVector[random((int)random(10)/10.0 * (costVector.size()- 1))];
 
         //Inserting the item into the solution and removing it from the candidate list
-        route.insert(route.begin() + (nextNode->j) + 1, candidateList[nextNode->i]);
-        cost += nextNode->delta;
+        s.route.insert(s.route.begin() + (nextNode->j) + 1, candidateList[nextNode->i]);
+        s.cost += nextNode->delta;
         candidateList.erase(candidateList.begin() + nextNode->i);
     }
 }
 
 bool TSP::swap(){
-    tMove bestSwap = {0, 0, INFINITY};  //Here we set the cost to INFINITY
+    tMove bestSwap = {0, 0, INFINITY};  //Here we set the s.cost to INFINITY
     double delta;
 
     timer.setTime(1);
@@ -171,19 +173,19 @@ bool TSP::swap(){
     for(int i = 1; i < dimension - 2; i++){
         for(int j = i + 1; j < dimension - 1; j++){
             if(j-i != 1)
-                delta =  matrix[route[i]][route[j-1]]
-                        +matrix[route[i]][route[j+1]]
-                        +matrix[route[j]][route[i-1]]
-                        +matrix[route[j]][route[i+1]]
-                        -matrix[route[i]][route[i-1]]
-                        -matrix[route[i]][route[i+1]]
-                        -matrix[route[j]][route[j-1]]
-                        -matrix[route[j]][route[j+1]];
+                delta =  matrix[s.route[i]][s.route[j-1]]
+                        +matrix[s.route[i]][s.route[j+1]]
+                        +matrix[s.route[j]][s.route[i-1]]
+                        +matrix[s.route[j]][s.route[i+1]]
+                        -matrix[s.route[i]][s.route[i-1]]
+                        -matrix[s.route[i]][s.route[i+1]]
+                        -matrix[s.route[j]][s.route[j-1]]
+                        -matrix[s.route[j]][s.route[j+1]];
             else
-                delta =  matrix[route[i]][route[j+1]]
-                        +matrix[route[j]][route[i-1]]
-                        -matrix[route[i]][route[i-1]]
-                        -matrix[route[j]][route[j+1]];
+                delta =  matrix[s.route[i]][s.route[j+1]]
+                        +matrix[s.route[j]][s.route[i-1]]
+                        -matrix[s.route[i]][s.route[i-1]]
+                        -matrix[s.route[j]][s.route[j+1]];
                  
             
             if(bestSwap.delta > delta){
@@ -194,10 +196,10 @@ bool TSP::swap(){
         }
     }
 
-    //Making the swap in the route and inserting the delta in the cost
+    //Making the swap in the s.route and inserting the delta in the s.cost
     if(bestSwap.delta < 0){
-        cost = cost + bestSwap.delta;
-        std::swap(route[bestSwap.i], route[bestSwap.j]);
+        s.cost = s.cost + bestSwap.delta;
+        std::swap(s.route[bestSwap.i], s.route[bestSwap.j]);
         timer.setTime(1);
         return true;
     }
@@ -213,10 +215,10 @@ bool TSP::revert(){
     timer.setTime(2);
     for(int i = 1; i < dimension - 2; i++){
         for(int j = i + 2; j < dimension - 1; j++){
-            delta =  matrix[route[i]][route[j+1]]
-                    +matrix[route[j]][route[i-1]]
-                    -matrix[route[i]][route[i-1]]
-                    -matrix[route[j]][route[j+1]];
+            delta =  matrix[s.route[i]][s.route[j+1]]
+                    +matrix[s.route[j]][s.route[i-1]]
+                    -matrix[s.route[i]][s.route[i-1]]
+                    -matrix[s.route[j]][s.route[j+1]];
             
             if(bestReversion.delta > delta){
                 bestReversion.i = i;
@@ -227,8 +229,8 @@ bool TSP::revert(){
     } 
 
     if(bestReversion.delta < 0){
-        cost = cost + bestReversion.delta;
-        std::reverse(route.begin() + bestReversion.i, route.begin() + bestReversion.j+1);
+        s.cost = s.cost + bestReversion.delta;
+        std::reverse(s.route.begin() + bestReversion.i, s.route.begin() + bestReversion.j+1);
         timer.setTime(2);
         return true;
     }
@@ -251,12 +253,12 @@ bool TSP::reinsert(int num){
                 continue;
             }
 
-            delta =  matrix[route[j]][route[i]]
-                    +matrix[route[i+(num-1)]][route[j+1]]
-                    +matrix[route[i-1]][route[i+num]]
-                    -matrix[route[i-1]][route[i]]
-                    -matrix[route[i+(num-1)]][route[i+num]]
-                    -matrix[route[j]][route[j+1]];
+            delta =  matrix[s.route[j]][s.route[i]]
+                    +matrix[s.route[i+(num-1)]][s.route[j+1]]
+                    +matrix[s.route[i-1]][s.route[i+num]]
+                    -matrix[s.route[i-1]][s.route[i]]
+                    -matrix[s.route[i+(num-1)]][s.route[i+num]]
+                    -matrix[s.route[j]][s.route[j+1]];
             
             if(bestReinsertion.delta > delta){
                 bestReinsertion.i = i;
@@ -267,15 +269,15 @@ bool TSP::reinsert(int num){
     }
     
     if(bestReinsertion.delta < 0){
-        cost = cost + bestReinsertion.delta;
+        s.cost = s.cost + bestReinsertion.delta;
 
-        std::vector<int> subroute(route.begin() + bestReinsertion.i, route.begin() + bestReinsertion.i + num);
-        route.erase(route.begin() + bestReinsertion.i, route.begin() + bestReinsertion.i + num);
+        std::vector<int> subroute(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i + num);
+        s.route.erase(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i + num);
 
         if(bestReinsertion.i > bestReinsertion.j)
-            route.insert(route.begin() + (bestReinsertion.j+1), subroute.begin(), subroute.end());
+            s.route.insert(s.route.begin() + (bestReinsertion.j+1), subroute.begin(), subroute.end());
         else
-            route.insert(route.begin() + bestReinsertion.j-(num-1), subroute.begin(), subroute.end());  //If the subsequence is inserted in a j position that is ahead of the previous(i), it is needed to correct the index after the deletion
+            s.route.insert(s.route.begin() + bestReinsertion.j-(num-1), subroute.begin(), subroute.end());  //If the subsequence is inserted in a j position that is ahead of the previous(i), it is needed to correct the index after the deletion
         
         timer.setTime(2+num);
         return true;
@@ -292,28 +294,28 @@ void TSP::pertub(){
     int i = random(dimension - (iSize+jSize+2)),
         j = random(dimension - (i+iSize+jSize+1)) + (i+iSize);
 
-    std::vector<int> subroute1(route.begin() + i, route.begin() + i + iSize + 1),
-                     subroute2(route.begin() + j, route.begin() + j + jSize + 1);
+    std::vector<int> subroute1(s.route.begin() + i, s.route.begin() + i + iSize + 1),
+                     subroute2(s.route.begin() + j, s.route.begin() + j + jSize + 1);
 
-    cost -=  matrix[route[i-1]][route[i]]
-            +matrix[route[i+iSize]][route[i+iSize+1]]
-            +((i+iSize+1 == j)? 0 : matrix[route[j-1]][route[j]])   //Checks if the subsequences are adjacent
-            +matrix[route[j+jSize]][route[j+jSize+1]];
+    s.cost -=  matrix[s.route[i-1]][s.route[i]]
+            +matrix[s.route[i+iSize]][s.route[i+iSize+1]]
+            +((i+iSize+1 == j)? 0 : matrix[s.route[j-1]][s.route[j]])   //Checks if the subsequences are adjacent
+            +matrix[s.route[j+jSize]][s.route[j+jSize+1]];
 
-    route.erase(route.begin() + j, route.begin() + j + jSize + 1);
-    route.erase(route.begin() + i, route.begin() + i + iSize + 1);
-    route.insert(route.begin() + i, subroute2.begin(), subroute2.end());
-    route.insert(route.begin() + j + (jSize - iSize), subroute1.begin(), subroute1.end());
+    s.route.erase(s.route.begin() + j, s.route.begin() + j + jSize + 1);
+    s.route.erase(s.route.begin() + i, s.route.begin() + i + iSize + 1);
+    s.route.insert(s.route.begin() + i, subroute2.begin(), subroute2.end());
+    s.route.insert(s.route.begin() + j + (jSize - iSize), subroute1.begin(), subroute1.end());
 
-    cost +=  matrix[route[i-1]][route[i]]
-            +matrix[route[i+jSize]][route[i+jSize+1]]
-            +((i+iSize+1 == j)? 0 : matrix[route[j + (jSize-iSize)-1]][route[j + (jSize-iSize)]])
-            +matrix[route[j+jSize]][route[j+jSize+1]];
+    s.cost +=  matrix[s.route[i-1]][s.route[i]]
+            +matrix[s.route[i+jSize]][s.route[i+jSize+1]]
+            +((i+iSize+1 == j)? 0 : matrix[s.route[j + (jSize-iSize)-1]][s.route[j + (jSize-iSize)]])
+            +matrix[s.route[j+jSize]][s.route[j+jSize+1]];
 }
 
 void TSP::printSolution(){
     for(int i = 0; i <= dimension; i++)
-        printf("%d%s", finalRoute[i]+1, i == dimension?"\n":", ");
+        printf("%d%s", final.route[i]+1, i == dimension?"\n":", ");
 }
 
 void TSP::printTimes(){
@@ -326,14 +328,14 @@ void TSP::printTimes(){
 }
 
 double TSP::getCost(){
-    return finalCost;
+    return final.cost;
 }
 
 double TSP::getRealCost(){
     double sum = 0;
 
     for(int i = 0; i < dimension; i++){
-        sum+= matrix[finalRoute[i]][finalRoute[i+1]];
+        sum+= matrix[final.route[i]][final.route[i+1]];
     }
     
     return sum;
@@ -351,24 +353,24 @@ void TSP::printMatrix(){
 
 //------------============ Debugging functions ============------------
 
-void TSP::printCurrentSolution(bool best){
-    if(best)
-        for(int i = 0; i < bestRoute.size(); i++)
-            printf("%d%s", bestRoute[i]+1, i+1 == bestRoute.size()?"\n":", ");
+void TSP::printCurrentSolution(bool returnBest){
+    if(returnBest)
+        for(int i = 0; i < best.route.size(); i++)
+            printf("%d%s", best.route[i]+1, i+1 == best.route.size()?"\n":", ");
     else
-        for(int i = 0; i < route.size(); i++)
-            printf("%d%s", route[i]+1, i+1 == route.size()?"\n":", ");
+        for(int i = 0; i < s.route.size(); i++)
+            printf("%d%s", s.route[i]+1, i+1 == s.route.size()?"\n":", ");
 }
 
-double TSP::getCurrentRealCost(bool best){
+double TSP::getCurrentRealCost(bool returnBest){
     double sum = 0;
 
-    if(best)
+    if(returnBest)
         for(int i = 0; i < dimension; i++)
-            sum+= matrix[bestRoute[i]][bestRoute[i+1]];
+            sum+= matrix[best.route[i]][best.route[i+1]];
     else
         for(int i = 0; i < dimension; i++)
-            sum+= matrix[route[i]][route[i+1]];
+            sum+= matrix[s.route[i]][s.route[i+1]];
     
     return sum;
 }

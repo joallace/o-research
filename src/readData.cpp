@@ -37,7 +37,7 @@ void readData( int argc, char** argv, int* Dimension, double ***Mdist )
     ifstream in( instancia, ios::in);
 
 	if (!in) {
-		cout << "arquivo nao pode ser aberto\n";
+		cout << "Arquivo nao pode ser aberto\n";
 		exit(1);
     }
 

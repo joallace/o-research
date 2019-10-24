@@ -46,7 +46,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 
 #delete objetos e arquivos de dependencia
 clean:
-	@echo "\033[31mcleaning obj directory \033[0m"
+	@echo "\033[31mCleaning obj directory \033[0m"
 	@rm tsp -f $(OBJDIR)/*.o $(OBJDIR)/*.d
 
 

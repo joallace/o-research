@@ -20,10 +20,16 @@ typedef struct move{
      }
 }tMove;
 
+typedef struct{
+     double cost;
+     std::vector<int> route;
+}tSolution;
+
 class TSP{
-     double **matrix, cost, bestCost, finalCost;
+     tSolution s, best, final;
+     double **matrix;
      int dimension;
-     std::vector<int> route, bestRoute, finalRoute, candidateList;
+     std::vector<int> candidateList;
      Timer timer;
 
      void subtour(),
@@ -36,9 +42,12 @@ class TSP{
          
      int random(int num);
 
-     //Debugging functions
-          void printCurrentSolution(bool best);   //Insert true to get the bestRoute or bestCost
-          double getCurrentRealCost(bool best);
+     //-----===== Debugging functions =====-----
+
+     void printCurrentSolution(bool returnBest);   //Insert true to get the bestRoute or bestCost
+     double getCurrentRealCost(bool returnBest);
+
+     //-----===============================-----
 
      public:
           TSP(double ***mPointer, int dimension);
