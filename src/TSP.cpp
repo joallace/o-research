@@ -314,12 +314,12 @@ void TSP::printSolution(){
 }
 
 void TSP::printTimes(){
-    std::cout << "Tempo medio de execucao da SI: " << timer.getTotalTime() << " (s)\n";
-    std::cout << "Tempo medio de execucao da troca: " << timer.getSwapTime() << " (s)\n";
-    std::cout << "Tempo medio de execucao do Or-opt: " << timer.getReinsertion1Time() << " (s)\n";
-    std::cout << "Tempo medio de execucao do Or-opt2: " << timer.getReinsertion2Time() << " (s)\n";
-    std::cout << "Tempo medio de execucao do Or-opt3: " << timer.getReinsertion3Time() << " (s)\n";
-    std::cout << "Tempo medio de execucao do 2-opt: " << timer.getRevertTime() << " (s)\n\n";
+    std::cout << "Tempo medio de execucao da SI: " << timer.getTotalTime() << " (s)\n"
+              << "Tempo medio de execucao da troca: " << timer.getSwapTime() << " (s)\n"
+              << "Tempo medio de execucao do Or-opt: " << timer.getReinsertion1Time() << " (s)\n"
+              << "Tempo medio de execucao do Or-opt2: " << timer.getReinsertion2Time() << " (s)\n"
+              << "Tempo medio de execucao do Or-opt3: " << timer.getReinsertion3Time() << " (s)\n"
+              << "Tempo medio de execucao do 2-opt: " << timer.getRevertTime() << " (s)\n\n";
 }
 
 double TSP::getCost(){
