@@ -53,6 +53,8 @@
         "thread": "cpp",
         "cfenv": "cpp",
         "cinttypes": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "iterator": "cpp",
+        "random": "cpp"
     }
 }

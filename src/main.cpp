@@ -14,10 +14,9 @@ int main(int argc, char** argv) {
     if(dimension < 16)
         tsp.printMatrix();
 
-    std::cout << "\nTotal cost: " << tsp.getCost() 
-              << "\nReal cost: " << tsp.getRealCost() << std::endl;
+    std::cout << "\nTotal cost: " << tsp.getCost() << std::endl;
 
-    tsp.printSolution();
+    //tsp.printSolution();
 
     std::cout << "\n\n";
 

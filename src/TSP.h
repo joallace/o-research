@@ -31,10 +31,15 @@ class TSP{
      int dimension;
      std::vector<int> candidateList;
      Timer timer;
+     unsigned int swapIt = 0,
+                  revertIt = 0,
+                  reinsert1It = 0,
+                  reinsert2It = 0,
+                  reinsert3It = 0;
 
      void subtour(),
           initialRoute(),
-          pertub();
+          perturb();
 
      bool swap(),
           revert(),
