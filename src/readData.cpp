@@ -14,22 +14,21 @@ void readData( int argc, char** argv, int* Dimension, double ***Mdist )
 {
 
      if (argc < 2) {
-         cout << "\nFaltando parametros\n";
-         cout << " ./exec [Instancia] "<< endl;
+         cout << "\nERROR: Missing parameters\n";
+         cout << " ./tsp [Instance] -optional flags"<< endl;
          exit(1);
      }
 
-     if (argc > 2) {
-          cout << "\nMuitos parametros\n";
-          cout << " ./exec [Instancia] " << endl;
+     if (argc > 3) {
+          cout << "\nERROR: Too many parameters\n";
+          cout << " ./tsp [Instance] -optional flags" << endl;
          exit(1);
      }
 
     int N;
     string arquivo, ewt;
 
-     char *instancia;
-     instancia = argv[1];
+     char *instancia = argv[1];
 
      //ifstream in(argv[1], ios::in);
 
@@ -37,7 +36,7 @@ void readData( int argc, char** argv, int* Dimension, double ***Mdist )
     ifstream in( instancia, ios::in);
 
 	if (!in) {
-		cout << "Arquivo nao pode ser aberto\n";
+		cout << "ERROR: Could not open file!\n";
 		exit(1);
     }
 

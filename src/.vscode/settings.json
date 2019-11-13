@@ -55,6 +55,7 @@
         "cinttypes": "cpp",
         "typeindex": "cpp",
         "iterator": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "map": "cpp"
     }
 }

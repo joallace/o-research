@@ -11,7 +11,7 @@
 #define NEIGHBORLIST_SIZE 5
 #define IMAX 50
 
-//A structure that stores the cost from a certain move involving i and j
+// A structure that stores the cost from a certain move involving i and j
 typedef struct move{
      int i, j;
      double delta;
@@ -20,6 +20,7 @@ typedef struct move{
      }
 }tMove;
 
+// A structure that represents a solution
 typedef struct{
      double cost;
      std::vector<int> route;
@@ -31,11 +32,6 @@ class TSP{
      int dimension;
      std::vector<int> candidateList;
      Timer timer;
-     unsigned int swapIt = 0,
-                  revertIt = 0,
-                  reinsert1It = 0,
-                  reinsert2It = 0,
-                  reinsert3It = 0;
 
      void subtour(),
           initialRoute(),
@@ -49,8 +45,8 @@ class TSP{
 
      //-----===== Debugging functions =====-----
 
-     void printCurrentSolution(bool returnBest);   //Insert true to get the bestRoute or bestCost
-     double getCurrentRealCost(bool returnBest);
+     void printCurrentSolution(bool returnBest);   // Insert true to get the bestRoute
+     double getCurrentRealCost(bool returnBest);  // Insert true to get the bestCost
 
      //-----===============================-----
 
@@ -63,6 +59,8 @@ class TSP{
 
           double getCost(),
                  getRealCost();
+
+          std::vector<double> *getTimes();
 };
 
 #endif // TSP_H
