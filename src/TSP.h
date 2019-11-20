@@ -9,7 +9,7 @@
 
 #define SUBTOUR_SIZE 3
 #define NEIGHBORLIST_SIZE 5
-#define DEFAULT_NEIGHBORLIST {1, 2, 3, 4, 5}
+#define DEFAULT_NEIGHBORLIST {3, 4, 5}
 #define IMAX 50
 
 // A structure that stores the cost from a certain move involving i and j

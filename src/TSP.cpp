@@ -227,6 +227,66 @@ bool TSP::revert(){
     return false;
 }
 
+// bool TSP::reinsert(int num){
+//   double novo_valor_obj, perda, ganho, delta, melhor_valor_obj = INFINITY;
+//   int melhor_i, melhor_j;
+//   bool improved = false;
+
+//   auto rit = s.route.rbegin();
+//   int j_bk, i_bk;
+
+//   timer.setTime(2+num);
+//   for (int i = 1; i < s.route.size() - num; i++)
+//   {
+//     double perda_1 = +matrix[s.route[i - 1]][s.route[i + num]] - matrix[s.route[i - 1]][s.route[i]] - matrix[s.route[i + num - 1]][s.route[i + num]];
+
+//     for (int j = 1; j < s.route.size() - num; j++)
+//     {
+//       if (j == i)
+//         continue;
+
+//       if (i > j)
+//       {
+//         delta = matrix[s.route[i]][s.route[j - 1]] + matrix[s.route[i + num - 1]][s.route[j]] - matrix[s.route[j]][s.route[j - 1]] + perda_1;
+//       }
+//       else
+//       {
+//         j_bk = j;
+//         i_bk = i;
+
+//         i = s.route.size() - i - num;
+//         j = s.route.size() - j - num;
+
+//         delta = matrix[*(rit + i)][*(rit + j - 1)] + matrix[*(rit + i + num - 1)][*(rit + j)] + matrix[*(rit + i - 1)][*(rit + i + num)] - matrix[*(rit + i - 1)][*(rit + i)] - matrix[*(rit + i + num - 1)][*(rit + i + num)] - matrix[*(rit + j)][*(rit + j - 1)];
+
+//         j = j_bk;
+//         i = i_bk;
+//       }
+
+//       if (delta < 0)
+//       {
+//         if (s.cost + delta < melhor_valor_obj - std::numeric_limits<double>::epsilon())
+//         {
+//           melhor_valor_obj = s.cost + delta;
+//           melhor_i = i;
+//           melhor_j = j;
+//           improved = true;
+//         }
+//       }
+//     }
+//   }
+
+//   if (improved == true){
+//     std::vector<int> subsequencia(s.route.begin() + melhor_i, s.route.begin() + melhor_i + num);
+
+//     s.route.erase(s.route.begin() + melhor_i, s.route.begin() + melhor_i + num);
+//     s.route.insert(s.route.begin() + melhor_j, subsequencia.begin(), subsequencia.end());
+//     s.cost = melhor_valor_obj;
+//   }
+//     timer.setTime(2+num);
+//   return improved;
+// }
+
 bool TSP::reinsert(int num){
     tMove bestReinsertion = {0, 0, INFINITY};
     double delta, rmDelta;
@@ -237,10 +297,10 @@ bool TSP::reinsert(int num){
         rmDelta =  matrix[s.route[i-1]][s.route[i+num]]
                   -matrix[s.route[i-1]][s.route[i]]
                   -matrix[s.route[i+(num-1)]][s.route[i+num]];
-        for(int j = 0; j < dimension - (num+1); j++){   //j starts at 0 due to the fact that the subsequence starting from i will be inserted one position after it
+        for(int j = 1; j < dimension - num; j++){   //j starts at 0 due to the fact that the subsequence starting from i will be inserted one position after it
             //Checking if the j index is the same as the beginning of the subsequence
-            if(j+1 == i){
-                j += num;   //If it really is, it will jump the whole subsequence
+            if(j == i){
+                //j += num;   //If it really is, it will jump the whole subsequence
                 continue;
             }
             
@@ -264,9 +324,9 @@ bool TSP::reinsert(int num){
         s.route.erase(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i + num);
 
         if(bestReinsertion.i > bestReinsertion.j)
-            s.route.insert(s.route.begin() + (bestReinsertion.j+1), subroute.begin(), subroute.end());
+            s.route.insert(s.route.begin() + bestReinsertion.j, subroute.begin(), subroute.end());
         else
-            s.route.insert(s.route.begin() + bestReinsertion.j-(num-1), subroute.begin(), subroute.end());  //If the subsequence is inserted in a j position that is ahead of the previous(i), it is needed to correct the index after the deletion
+            s.route.insert(s.route.begin() + bestReinsertion.j-num, subroute.begin(), subroute.end());  //If the subsequence is inserted in a j position that is ahead of the previous(i), it is needed to correct the index after the deletion
         
         timer.setTime(2+num);
         return true;
@@ -276,88 +336,88 @@ bool TSP::reinsert(int num){
     return false;
 }
 
-void TSP::perturb(){
-    int iSize = random(ceil(dimension/10.0)-1),    //min = 1 & max = dimension/10 - 1
-        i = random(dimension - (iSize+1)),
-        jSize, j;
-
-    do{
-        jSize = random(ceil(dimension/10.0)-1);    //min = 1 & max = dimension/10 - 1
-        j = random(dimension - (jSize+1));
-    }while((j<=i && j+jSize>=i) || (j>=i && i+iSize>=j));
-
-    std::vector<int> subroute1(s.route.begin() + i, s.route.begin() + i + iSize + 1),
-                     subroute2(s.route.begin() + j, s.route.begin() + j + jSize + 1);
-
-    s.cost -=  matrix[s.route[i-1]][s.route[i]]
-            +matrix[s.route[i+iSize]][s.route[i+iSize+1]]
-            +((i+iSize+1 == j)? 0 : matrix[s.route[j-1]][s.route[j]])   //Checks if the subsequences are adjacent
-            +matrix[s.route[j+jSize]][s.route[j+jSize+1]];
-
-    s.route.erase(s.route.begin() + j, s.route.begin() + j + jSize + 1);
-    s.route.erase(s.route.begin() + i, s.route.begin() + i + iSize + 1);
-    s.route.insert(s.route.begin() + i, subroute2.begin(), subroute2.end());
-    s.route.insert(s.route.begin() + j + (jSize - iSize), subroute1.begin(), subroute1.end());
-
-    s.cost +=  matrix[s.route[i-1]][s.route[i]]
-            +matrix[s.route[i+jSize]][s.route[i+jSize+1]]
-            +((i+iSize+1 == j)? 0 : matrix[s.route[j + (jSize-iSize)-1]][s.route[j + (jSize-iSize)]])
-            +matrix[s.route[j+jSize]][s.route[j+jSize+1]];
-}
-
 // void TSP::perturb(){
-//     int n_min = 2, n_max = std::ceil(s.route.size() / 10.0);
-//     n_max = n_max >= n_min ? n_max : n_min;
+//     int iSize = random(ceil(dimension/10.0)-1),    //min = 1 & max = dimension/10 - 1
+//         i = random(dimension - (iSize+1)),
+//         jSize, j;
 
-//     int t1 = n_min == n_max ? n_min : rand() % (n_max - n_min) + n_min;
-//     int i = rand() % (s.route.size() - 1 - t1) + 1;
+//     do{
+//         jSize = random(ceil(dimension/10.0)-1);    //min = 1 & max = dimension/10 - 1
+//         j = random(dimension - (jSize+1));
+//     }while((j<=i && j+jSize>=i) || (j>=i && i+iSize>=j));
 
-//     int j, t2;
+//     std::vector<int> subroute1(s.route.begin() + i, s.route.begin() + i + iSize + 1),
+//                      subroute2(s.route.begin() + j, s.route.begin() + j + jSize + 1);
 
-//     if (i < 1 + n_min)
-//     {
-//         j = rand() % ((s.route.size() - n_min - 1) - (i + t1) + 1) + (i + t1);
-//         t2 = rand() % (std::min((int)(s.route.size() - j - 1), n_max) - n_min + 1) + n_min;
-//     }
-//     else if (i + t1 >= s.route.size() - n_min)
-//     {
-//         j = rand() % (i - n_min) + 1;
-//         t2 = rand() % (std::min((i - j), n_max) - n_min + 1) + n_min;
-//     }
-//     else
-//     {
-//         if (rand() % 2 == 1)
-//         {
-//         j = rand() % ((s.route.size() - n_min - 1) - (i + t1) + 1) + (i + t1);
-//         t2 = rand() % (std::min((int)(s.route.size() - j - 1), n_max) - n_min + 1) + n_min;
-//         }
-//         else
-//         {
-//         j = rand() % (i - n_min) + 1;
-//         t2 = rand() % (std::min((i - j), n_max) - n_min + 1) + n_min;
-//         }
-//     }
+//     s.cost -=  matrix[s.route[i-1]][s.route[i]]
+//             +matrix[s.route[i+iSize]][s.route[i+iSize+1]]
+//             +((i+iSize+1 == j)? 0 : matrix[s.route[j-1]][s.route[j]])   //Checks if the subsequences are adjacent
+//             +matrix[s.route[j+jSize]][s.route[j+jSize+1]];
 
-//     std::vector<int> subsequencia_i(s.route.begin() + i, s.route.begin() + i + t1);
-//     std::vector<int> subsequencia_j(s.route.begin() + j, s.route.begin() + j + t2);
+//     s.route.erase(s.route.begin() + j, s.route.begin() + j + jSize + 1);
+//     s.route.erase(s.route.begin() + i, s.route.begin() + i + iSize + 1);
+//     s.route.insert(s.route.begin() + i, subroute2.begin(), subroute2.end());
+//     s.route.insert(s.route.begin() + j + (jSize - iSize), subroute1.begin(), subroute1.end());
 
-//     if (i < j)
-//     {
-//         s.route.erase(s.route.begin() + j, s.route.begin() + j + t2);
-//         s.route.insert(s.route.begin() + j, subsequencia_i.begin(), subsequencia_i.end());
-//         s.route.erase(s.route.begin() + i, s.route.begin() + i + t1);
-//         s.route.insert(s.route.begin() + i, subsequencia_j.begin(), subsequencia_j.end());
-//     }
-//     else
-//     {
-//         s.route.erase(s.route.begin() + i, s.route.begin() + i + t1);
-//         s.route.insert(s.route.begin() + i, subsequencia_j.begin(), subsequencia_j.end());
-//         s.route.erase(s.route.begin() + j, s.route.begin() + j + t2);
-//         s.route.insert(s.route.begin() + j, subsequencia_i.begin(), subsequencia_i.end());
-//     }
-
-//     s.cost = getCurrentRealCost(false);
+//     s.cost +=  matrix[s.route[i-1]][s.route[i]]
+//             +matrix[s.route[i+jSize]][s.route[i+jSize+1]]
+//             +((i+iSize+1 == j)? 0 : matrix[s.route[j + (jSize-iSize)-1]][s.route[j + (jSize-iSize)]])
+//             +matrix[s.route[j+jSize]][s.route[j+jSize+1]];
 // }
+
+void TSP::perturb(){
+    int n_min = 2, n_max = std::ceil(s.route.size() / 10.0);
+    n_max = n_max >= n_min ? n_max : n_min;
+
+    int t1 = n_min == n_max ? n_min : rand() % (n_max - n_min) + n_min;
+    int i = rand() % (s.route.size() - 1 - t1) + 1;
+
+    int j, t2;
+
+    if (i < 1 + n_min)
+    {
+        j = rand() % ((s.route.size() - n_min - 1) - (i + t1) + 1) + (i + t1);
+        t2 = rand() % (std::min((int)(s.route.size() - j - 1), n_max) - n_min + 1) + n_min;
+    }
+    else if (i + t1 >= s.route.size() - n_min)
+    {
+        j = rand() % (i - n_min) + 1;
+        t2 = rand() % (std::min((i - j), n_max) - n_min + 1) + n_min;
+    }
+    else
+    {
+        if (rand() % 2 == 1)
+        {
+        j = rand() % ((s.route.size() - n_min - 1) - (i + t1) + 1) + (i + t1);
+        t2 = rand() % (std::min((int)(s.route.size() - j - 1), n_max) - n_min + 1) + n_min;
+        }
+        else
+        {
+        j = rand() % (i - n_min) + 1;
+        t2 = rand() % (std::min((i - j), n_max) - n_min + 1) + n_min;
+        }
+    }
+
+    std::vector<int> subsequencia_i(s.route.begin() + i, s.route.begin() + i + t1);
+    std::vector<int> subsequencia_j(s.route.begin() + j, s.route.begin() + j + t2);
+
+    if (i < j)
+    {
+        s.route.erase(s.route.begin() + j, s.route.begin() + j + t2);
+        s.route.insert(s.route.begin() + j, subsequencia_i.begin(), subsequencia_i.end());
+        s.route.erase(s.route.begin() + i, s.route.begin() + i + t1);
+        s.route.insert(s.route.begin() + i, subsequencia_j.begin(), subsequencia_j.end());
+    }
+    else
+    {
+        s.route.erase(s.route.begin() + i, s.route.begin() + i + t1);
+        s.route.insert(s.route.begin() + i, subsequencia_j.begin(), subsequencia_j.end());
+        s.route.erase(s.route.begin() + j, s.route.begin() + j + t2);
+        s.route.insert(s.route.begin() + j, subsequencia_i.begin(), subsequencia_i.end());
+    }
+
+    s.cost = getCurrentRealCost(false);
+}
 
 // void TSP::perturb(){
 //     int iSize = random(ceil(dimension/10.0)-1),    //min = 1 & max = dimension/10 - 1

@@ -12,12 +12,11 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
 
     if(argc > 2 && argv[2][1] == 'b'){ // Benchmark mode
-        double costMean = 0;
-        std::vector<double> timeMean, *currentTime;
+        double costMean = 0, 
+               timeMean[7] = {};
+        std::vector<double> *currentTime;
 
-        timeMean.resize(7);
-
-        for(int i = 0; i < 10; i++){
+        for(int i = 1; i <= 10; i++){
             TSP *tsp = new TSP(&matrizAdj, dimension);
             costMean += tsp->getCost()/10;
             currentTime = tsp->getTimes();
@@ -25,12 +24,13 @@ int main(int argc, char** argv) {
             for(int j = 0; j < 7; j++)
                 timeMean[j] += (*currentTime)[j];
 
+            std::cout << "Iteration " << i << " cost: " << tsp->getCost() << "\n";
             delete currentTime;
             delete tsp;
         }
 
-        std::cout << "Average cost: " << costMean << "\n\n"
-                  << "----==== Execution time averages ====-----\n"
+        std::cout << "\n--------======== Averages ========---------\n"
+                  << "Average cost: " << costMean << "\n"
                   << "Total execution time: " << timeMean[0]/10 << " (s)\n"
                   << "| Construction execution time: " << timeMean[1]/10 << " (s)\n"
                   << "| Swap execution time: " << timeMean[2]/10 << " (s)\n"
