@@ -176,7 +176,7 @@ bool TSP::swap(){
                         -matrix[s.route[j]][s.route[j+1]];
                  
             
-            if(delta < bestSwap.delta){
+            if(delta < 0 && delta < bestSwap.delta){
                 bestSwap.i = i;
                 bestSwap.j = j;
                 bestSwap.delta = delta;
@@ -208,7 +208,7 @@ bool TSP::revert(){
                     -matrix[s.route[i]][s.route[i-1]]
                     -matrix[s.route[j]][s.route[j+1]];
             
-            if(delta < bestReversion.delta){
+            if(delta < 0 && delta < bestReversion.delta){
                 bestReversion.i = i;
                 bestReversion.j = j;
                 bestReversion.delta = delta;
@@ -249,7 +249,7 @@ bool TSP::reinsert(int num){
                     +matrix[s.route[i+(num-1)]][s.route[j+1]]
                     -matrix[s.route[j]][s.route[j+1]];
             
-            if(delta < bestReinsertion.delta){
+            if(delta < 0 && delta < bestReinsertion.delta){
                 bestReinsertion.i = i;
                 bestReinsertion.j = j;
                 bestReinsertion.delta = delta;
