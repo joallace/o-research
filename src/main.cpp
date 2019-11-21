@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
             tsp.printSolution();
         }
 
-        std::cout << "Total cost: " << tsp.getCost() << "\n\n";
+        std::cout << "Total cost: " << tsp.getCost() << " (" << tsp.getRealCost() << ")\n\n";
 
         tsp.printTimes();
     }
