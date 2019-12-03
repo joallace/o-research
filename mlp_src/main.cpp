@@ -45,12 +45,12 @@ int main(int argc, char** argv) {
         if(dimension < 16){
             mlp.printMatrix();
             std::cout << std::endl;
-            mlp.printSolution();
+            // mlp.printSolution();
         }
 
-        std::cout << "Total cost: " << mlp.getCost() << " (" << mlp.getRealCost() << ")\n\n";
+        // std::cout << "Total cost: " << mlp.getCost() << " (" << mlp.getRealCost() << ")\n\n";
 
-        mlp.printTimes();
+        // mlp.printTimes();
     }
 
     return 0;

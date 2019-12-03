@@ -18,6 +18,7 @@ MLP::MLP(double ***mPointer, int dimension){
         construction();
         timer.setTime(0);
         //---====================---
+        fillCost();
 
         printSolution(s);
 
@@ -88,10 +89,9 @@ inline int MLP::random(int num){
 }
 
 void MLP::construction(){
-    int penultimate,
-        last = 0,
-        i = 0;
-    float alpha;
+    int last = 0,
+        i = 0,
+        interval;
 
     s.route.push_back(0);
 
@@ -107,18 +107,42 @@ void MLP::construction(){
             }
         );
 
-        alpha = random(10)/10.0;
-        penultimate = last;
-        last = random((int) candidateList.size() * alpha);
+        interval = (int) (random(10)/10.0 * candidateList.size());
+        last = random(interval == 0 ? candidateList.size() : interval) - 1;
 
         s.route.push_back(candidateList[last]);
         candidateList.erase(candidateList.begin() + last);
-
-        // s.cost[i][i+1].c =  matrix[s.route[i]][s.route[i+1]] 
-        //                   + i>0 ? s.cost[i-1][i].c : 0;
-        // i++;
     }
     s.route.push_back(0);
+}
+
+void MLP::fillCost(){
+    for(int i = 0; i < s.route.size(); i++){
+        for(int j = i+1; j < s.route.size(); j++){
+            s.cost[i][j].t = matrix[j-1][j] + j>i+1 ? s.cost[i][j-1].t : 0;          
+            s.cost[j][i].t = s.cost[i][j].t;
+
+            s.cost[i][j].w = j-i;
+            s.cost[j][i].w = s.cost[j][i].w;
+
+            s.cost[i][j].c = j>i+1 ? s.cost[i][j-1].t : 0;
+
+        }
+    }
+
+    s.cost[0][0].t =
+    s.cost[0][0].c = 0;
+    s.cost[0][0].w = 1;
+
+    s.cost[s.route.size()-1][s.route.size()-1].t =
+    s.cost[s.route.size()-1][s.route.size()-1].c = 0;
+    s.cost[s.route.size()-1][s.route.size()-1].w = 1;
+    
+    for(int i = 1; i < s.route.size()-1; i++){
+        s.cost[i][i].t =
+        s.cost[i][i].c = 0;
+        s.cost[i][i].w = 1;
+    }
 }
 
 // A function that searches for the best nodes i and j to swap 

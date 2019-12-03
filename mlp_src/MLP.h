@@ -40,6 +40,7 @@ class MLP{
      Timer timer;
 
      void construction(),
+          fillCost(),
           perturb();
 
      bool swap(),

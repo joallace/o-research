@@ -1,1 +1,1 @@
-obj/main.o: src/main.cpp src/readData.h src/TSP.h src/Timer.h
+obj/main.o: mlp_src/main.cpp mlp_src/readData.h mlp_src/MLP.h mlp_src/Timer.h

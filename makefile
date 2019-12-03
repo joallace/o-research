@@ -1,3 +1,6 @@
+# Define o executavel
+TARGET = mlp
+
 #detecta se o sistema é de 32 ou 64 bits
 BITS_OPTION = -m64
 
@@ -15,7 +18,7 @@ CCLNFLAGS = -lm -lpthread
 #############################
 
 #### diretorios com os source files e com os objs files
-SRCDIR = src
+SRCDIR = mlp_src
 OBJDIR = obj
 #############################
 
@@ -25,7 +28,7 @@ OBJS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SRCS))
 #############################
 
 #### regra principal, gera o executavel
-tsp: $(OBJS) 
+$(TARGET): $(OBJS) 
 	@echo  "\033[31m \nLinking all objects files: \033[0m"
 	$(CPPC) $(BITS_OPTION) $(OBJS) -o $@ $(CCLNFLAGS)
 ############################
@@ -47,7 +50,8 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 #delete objetos e arquivos de dependencia
 clean:
 	@echo "\033[31mCleaning obj directory \033[0m"
-	@rm tsp -f $(OBJDIR)/*.o $(OBJDIR)/*.d
+	@rm $(TARGET) -f $(OBJDIR)/*.o $(OBJDIR)/*.d
 
 
-rebuild: clean tsp
+rebuild: clean $(TARGET)
+
