@@ -1,158 +1,128 @@
-#include "TSP.h"
+#include "MLP.h"
 
-TSP::TSP(double ***mPointer, int dimension){
+MLP::MLP(double ***mPointer, int dimension){
     // Setting up
     timer = Timer();
     matrix = *mPointer;
     this->dimension = dimension;
-    final.cost = INFINITY;
+    s.cost.resize(dimension+1, std::vector<tCost>(dimension+1));
     
     // Defining variables
     int i, i_ILS = dimension>=150 ? dimension/2 : dimension;
     std::vector<char> neighborList;
 
     // GILS
-    for(int iMax = 0; iMax < IMAX; iMax++){
-        s.cost = 0;
-
-        // Filling up the candidate list
-        for(i = 0; i < dimension; i++)
-            candidateList.push_back(i);
-
-
+    // for(int iMax = 0; iMax < IMAX; iMax++){
         //---=== Construction ===---
         timer.setTime(0);
-        
-        subtour(); // Creating a initial subtour
-        initialRoute(); // Filling up the solution vector feasibly
-
+        construction();
         timer.setTime(0);
         //---====================---
 
-        best.cost = INFINITY;
+        printSolution(s);
 
-        // RVND
-        for(int iILS = 0; iILS < i_ILS; iILS++){
-            neighborList = DEFAULT_NEIGHBORLIST;
-            while(!neighborList.empty()){
-                i = random(neighborList.size())-1;
-                switch(neighborList[i]){
-                    case 1:
-                        if(!swap())
-                            neighborList.erase(neighborList.begin() + i);
-                        else if(neighborList.size() != NEIGHBORLIST_SIZE)
-                            neighborList = DEFAULT_NEIGHBORLIST;
-                        break;
+        best = s;
 
-                    case 2:
-                        if(!revert())
-                            neighborList.erase(neighborList.begin() + i);
-                        else if(neighborList.size() != NEIGHBORLIST_SIZE)
-                            neighborList = DEFAULT_NEIGHBORLIST;
-                        break;
+    //     // RVND
+    //     for(int iILS = 0; iILS < i_ILS; iILS++){
+    //         neighborList = DEFAULT_NEIGHBORLIST;
+    //         while(!neighborList.empty()){
+    //             i = random(neighborList.size())-1;
+    //             switch(neighborList[i]){
+    //                 case 1:
+    //                     if(!swap())
+    //                         neighborList.erase(neighborList.begin() + i);
+    //                     else if(neighborList.size() != NEIGHBORLIST_SIZE)
+    //                         neighborList = DEFAULT_NEIGHBORLIST;
+    //                     break;
 
-                    case 3:
-                        if(!reinsert(1))
-                            neighborList.erase(neighborList.begin() + i);
-                        else if(neighborList.size() != NEIGHBORLIST_SIZE)
-                            neighborList = DEFAULT_NEIGHBORLIST;
-                        break;
+    //                 case 2:
+    //                     if(!revert())
+    //                         neighborList.erase(neighborList.begin() + i);
+    //                     else if(neighborList.size() != NEIGHBORLIST_SIZE)
+    //                         neighborList = DEFAULT_NEIGHBORLIST;
+    //                     break;
 
-                    case 4:
-                        if(!reinsert(2))
-                            neighborList.erase(neighborList.begin() + i);
-                        else if(neighborList.size() != NEIGHBORLIST_SIZE)
-                            neighborList = DEFAULT_NEIGHBORLIST;
-                        break;
+    //                 case 3:
+    //                     if(!reinsert(1))
+    //                         neighborList.erase(neighborList.begin() + i);
+    //                     else if(neighborList.size() != NEIGHBORLIST_SIZE)
+    //                         neighborList = DEFAULT_NEIGHBORLIST;
+    //                     break;
 
-                    case 5:
-                        if(!reinsert(3))
-                            neighborList.erase(neighborList.begin() + i);
-                        else if(neighborList.size() != NEIGHBORLIST_SIZE)
-                            neighborList = DEFAULT_NEIGHBORLIST;
-                        break;
-                }
-            }
-            if(s.cost < best.cost){
-                best.cost = s.cost;
-                best.route = s.route;
-                iILS = 0;
-            }
-            else{
-                s.cost = best.cost;
-                s.route = best.route;
-            }
-            perturb();
-        }
-        if(best.cost < final.cost){
-            final.cost = best.cost;
-            final.route = best.route;
-        }
-        s.route.clear();
-    }
-    timer.stop();
+    //                 case 4:
+    //                     if(!reinsert(2))
+    //                         neighborList.erase(neighborList.begin() + i);
+    //                     else if(neighborList.size() != NEIGHBORLIST_SIZE)
+    //                         neighborList = DEFAULT_NEIGHBORLIST;
+    //                     break;
+
+    //                 case 5:
+    //                     if(!reinsert(3))
+    //                         neighborList.erase(neighborList.begin() + i);
+    //                     else if(neighborList.size() != NEIGHBORLIST_SIZE)
+    //                         neighborList = DEFAULT_NEIGHBORLIST;
+    //                     break;
+    //             }
+    //         }
+    //         if(s.cost[0][s.route.size()-1].c < best.cost[0][best.route.size()-1].c){
+    //             best = s;
+    //             iILS = 0;
+    //         }
+    //         else{
+    //             s = best;
+    //         }
+    //         perturb();
+    //     }
+    //     if(best.cost[0][best.route.size()-1].c < final.cost[0][final.route.size()-1].c){
+    //         final = best;
+    //     }
+    //     s.route.clear();
+    // }
+    // timer.stop();
 }
 
 //Just a function that returns a random number from [1, num]
-inline int TSP::random(int num){
+inline int MLP::random(int num){
     return (rand()%num)+1;
 }
 
-void TSP::subtour(){
-    //Obtaining an initial item randomly
-    int first = random(dimension-1);
+void MLP::construction(){
+    int penultimate,
+        last = 0,
+        i = 0;
+    float alpha;
 
-    //Inserting it into the solution and removing it from the candidate list
-    s.route.push_back(first);
-    candidateList.erase(candidateList.begin() + first);
+    s.route.push_back(0);
 
-    //Inserting random items from the candidate list into the solution
-    for(int i = 0; i < SUBTOUR_SIZE; i++){
-        int j = random(candidateList.size()) - 1;
-        s.cost += matrix[s.route[i]][candidateList[j]];
-        s.route.push_back(candidateList[j]);
-        candidateList.erase(candidateList.begin() + j);  
-    }
+    // Filling up the candidate list
+    for(int i = 1; i < dimension; i++)
+        candidateList.push_back(i);
 
-    //Finishing the Hamiltonian cycle
-    s.route.push_back(first);
-    s.cost += matrix[s.route[SUBTOUR_SIZE]][s.route[SUBTOUR_SIZE+1]];
-}
-
-void TSP::initialRoute(){    
-    //Repeating until a feasible initial solution is found
-    while (!candidateList.empty()){
-        //Calculating the insertion cost of each one of the remaining candidates
-        tMove costVector[(s.route.size()-2) * candidateList.size()];
-
-        for(int i = 1, k = 0; i < s.route.size()-1; i++){
-            for(int j = 0; j < candidateList.size(); j++){
-                //Assigning the indexes to the node members
-                costVector[k].i = j;
-                costVector[k].j = i;
-
-                //Calculating the insertion cost and inserting the node into the vector
-                costVector[k++].delta =  matrix[s.route[i]][candidateList[j]] 
-                                        +matrix[candidateList[j]][s.route[i+1]]
-                                        -matrix[s.route[i]][s.route[i+1]];
+    // Searching for the next node with lowest cost relative to the last node to insert in s
+    while(!candidateList.empty()){
+        std::sort(candidateList.begin(), candidateList.end(), 
+            [&](int j, int k) -> bool{
+                return matrix[last][j] < matrix[last][k];
             }
-        }
-    
-        //Sorting the costVector
-        std::sort(&costVector[0], &costVector[(s.route.size()-2) * candidateList.size()]);
-        
-        //Obtaining an item in a random interval of the costVector
-        tMove* nextNode = &costVector[random((int)random(10)/10.0 * (((s.route.size()-2) * candidateList.size())- 1))];
+        );
 
-        //Inserting the item into the solution and removing it from the candidate list
-        s.route.insert(s.route.begin() + (nextNode->j) + 1, candidateList[nextNode->i]);
-        s.cost += nextNode->delta;
-        candidateList.erase(candidateList.begin() + nextNode->i);
+        alpha = random(10)/10.0;
+        penultimate = last;
+        last = random((int) candidateList.size() * alpha);
+
+        s.route.push_back(candidateList[last]);
+        candidateList.erase(candidateList.begin() + last);
+
+        // s.cost[i][i+1].c =  matrix[s.route[i]][s.route[i+1]] 
+        //                   + i>0 ? s.cost[i-1][i].c : 0;
+        // i++;
     }
+    s.route.push_back(0);
 }
 
 // A function that searches for the best nodes i and j to swap 
-bool TSP::swap(){ 
+bool MLP::swap(){ 
     tMove bestSwap = {0, 0, INFINITY};  //Here we set the cost to INFINITY
     double delta, rmDelta;
 
@@ -181,7 +151,7 @@ bool TSP::swap(){
 
     // Making the swap in the route and inserting the delta in the cost
     if(bestSwap.delta < 0){
-        s.cost = s.cost + bestSwap.delta;
+        // s.cost = s.cost + bestSwap.delta;
         std::swap(s.route[bestSwap.i], s.route[bestSwap.j]);
         timer.setTime(1);
         return true;
@@ -192,7 +162,7 @@ bool TSP::swap(){
 }
 
 // A function that searches for the best range [i,j] to reverse
-bool TSP::revert(){ 
+bool MLP::revert(){ 
     tMove bestReversion = {0, 0, INFINITY};
     double delta;
 
@@ -213,7 +183,7 @@ bool TSP::revert(){
     } 
 
     if(bestReversion.delta < 0){
-        s.cost = s.cost + bestReversion.delta;
+        // s.cost = s.cost + bestReversion.delta;
         std::reverse(s.route.begin() + bestReversion.i, s.route.begin() + bestReversion.j+1);
         timer.setTime(2);
         return true;
@@ -224,7 +194,7 @@ bool TSP::revert(){
 }
 
 // A function that searches for the best j position to reinsert a subsequence [i,num)
-bool TSP::reinsert(int num){ 
+bool MLP::reinsert(int num){ 
     tMove bestReinsertion = {0, 0, INFINITY};
     double delta, rmDelta;
 
@@ -257,7 +227,7 @@ bool TSP::reinsert(int num){
     }
     
     if(bestReinsertion.delta < 0){
-        s.cost = s.cost + bestReinsertion.delta;
+        // s.cost = s.cost + bestReinsertion.delta;
         
         std::vector<int> subroute(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i + num);
         
@@ -273,7 +243,7 @@ bool TSP::reinsert(int num){
 }
 
 // A function that perturbs the solution using the Double-bridge method
-void TSP::perturb(){
+void MLP::perturb(){
     int iSize = random(ceil(dimension/10.0)-1),    //min = 1 & max = dimension/10 - 1
         jSize = random(ceil(dimension/10.0)-1);
 
@@ -283,28 +253,28 @@ void TSP::perturb(){
     std::vector<int> subroute1(s.route.begin() + i, s.route.begin() + i + iSize + 1),
                      subroute2(s.route.begin() + j, s.route.begin() + j + jSize + 1);
 
-    s.cost -=  matrix[s.route[i-1]][s.route[i]]
-            +matrix[s.route[i+iSize]][s.route[i+iSize+1]]
-            +((i+iSize+1 == j)? 0 : matrix[s.route[j-1]][s.route[j]])   //Checks if the subsequences are adjacent
-            +matrix[s.route[j+jSize]][s.route[j+jSize+1]];
+    // s.cost -=  matrix[s.route[i-1]][s.route[i]]
+    //         +matrix[s.route[i+iSize]][s.route[i+iSize+1]]
+    //         +((i+iSize+1 == j)? 0 : matrix[s.route[j-1]][s.route[j]])   //Checks if the subsequences are adjacent
+    //         +matrix[s.route[j+jSize]][s.route[j+jSize+1]];
 
     s.route.erase(s.route.begin() + j, s.route.begin() + j + jSize + 1);
     s.route.erase(s.route.begin() + i, s.route.begin() + i + iSize + 1);
     s.route.insert(s.route.begin() + i, subroute2.begin(), subroute2.end());
     s.route.insert(s.route.begin() + j + (jSize - iSize), subroute1.begin(), subroute1.end());
 
-    s.cost +=  matrix[s.route[i-1]][s.route[i]]
-            +matrix[s.route[i+jSize]][s.route[i+jSize+1]]
-            +((i+iSize+1 == j)? 0 : matrix[s.route[j + (jSize-iSize)-1]][s.route[j + (jSize-iSize)]])
-            +matrix[s.route[j+jSize]][s.route[j+jSize+1]];
+    // s.cost +=  matrix[s.route[i-1]][s.route[i]]
+    //         +matrix[s.route[i+jSize]][s.route[i+jSize+1]]
+    //         +((i+iSize+1 == j)? 0 : matrix[s.route[j + (jSize-iSize)-1]][s.route[j + (jSize-iSize)]])
+    //         +matrix[s.route[j+jSize]][s.route[j+jSize+1]];
 }
 
-void TSP::printSolution(){
+void MLP::printSolution(){
     for(int i = 0; i <= dimension; i++)
         printf("%d%s", final.route[i]+1, i == dimension?"\n":", ");
 }
 
-void TSP::printTimes(){
+void MLP::printTimes(){
     std::cout << "Total time: " << timer.getTotalTime() << " (s)\n"
               << "| Construction execution time: " << timer.getConstructionTime() << " (s)\n"
               << "| Swap execution time: " << timer.getSwapTime() << " (s)\n"
@@ -315,7 +285,7 @@ void TSP::printTimes(){
 }
 
 // Return the execution times in a vector
-std::vector<double>* TSP::getTimes(){
+std::vector<double>* MLP::getTimes(){
     std::vector<double> *times = new std::vector<double>;
     times->resize(7);
 
@@ -330,11 +300,11 @@ std::vector<double>* TSP::getTimes(){
     return times;
 }
 
-double TSP::getCost(){
-    return final.cost;
+double MLP::getCost(){
+    return final.cost[0][final.route.size()-1].c;
 }
 
-double TSP::getRealCost(){
+double MLP::getRealCost(){
     double sum = 0;
 
     for(int i = 0; i < dimension; i++)
@@ -343,7 +313,7 @@ double TSP::getRealCost(){
     return sum;
 }
 
-void TSP::printMatrix(){
+void MLP::printMatrix(){
     printf("Dimension: %d\n\n", dimension);
     for(int i = 0; i < dimension; i++){
         for(int j = 0; j < dimension; j++){
@@ -355,17 +325,17 @@ void TSP::printMatrix(){
 
 //------------============ Debugging functions ============------------
 
-void TSP::printSolution(tSolution &solution){
+void MLP::printSolution(tSolution &solution){
     for(int i = 0; i < solution.route.size(); i++)
         printf("%d%s", solution.route[i]+1, i+1 == solution.route.size()?"\n":", ");
 }
 
-void TSP::printRoute(std::vector<int> &route){
+void MLP::printRoute(std::vector<int> &route){
     for(int i = 0; i < route.size(); i++)
         printf("%d%s", route[i]+1, i+1 == route.size()?"\n":", ");
 }
 
-double TSP::getRealCost(tSolution &solution){
+double MLP::getRealCost(tSolution &solution){
     double sum = 0;
 
     for(int i = 0; i < dimension; i++)
