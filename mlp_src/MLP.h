@@ -53,7 +53,7 @@ class MLP{
 
      void printSolution(tSolution &solution),
           printRoute(std::vector<int> &route);
-     double getRealCost(tSolution &solution);
+     double getRealCost(int from, int to);
 
      //-----===============================-----
 

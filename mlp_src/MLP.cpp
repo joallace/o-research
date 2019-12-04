@@ -83,11 +83,12 @@ MLP::MLP(double ***mPointer, int dimension){
     // timer.stop();
 }
 
-//Just a function that returns a random number from [1, num]
+// Just a function that returns a random number from [1, num]
 inline int MLP::random(int num){
     return (rand()%num)+1;
 }
 
+// Constructs a feasible initial solution
 void MLP::construction(){
     int last = 0,
         i = 0,
@@ -116,32 +117,50 @@ void MLP::construction(){
     s.route.push_back(0);
 }
 
+// Fill the solution cost vector
 void MLP::fillCost(){
-    for(int i = 0; i < s.route.size(); i++){
-        for(int j = i+1; j < s.route.size(); j++){
-            s.cost[i][j].t = matrix[j-1][j] + j>i+1 ? s.cost[i][j-1].t : 0;          
-            s.cost[j][i].t = s.cost[i][j].t;
-
-            s.cost[i][j].w = j-i;
-            s.cost[j][i].w = s.cost[j][i].w;
-
-            s.cost[i][j].c = j>i+1 ? s.cost[i][j-1].t : 0;
-
-        }
-    }
-
+    // Setting up the depot
     s.cost[0][0].t =
-    s.cost[0][0].c = 0;
-    s.cost[0][0].w = 1;
+    s.cost[0][0].c =
+    s.cost[0][0].w = 0;
 
     s.cost[s.route.size()-1][s.route.size()-1].t =
-    s.cost[s.route.size()-1][s.route.size()-1].c = 0;
-    s.cost[s.route.size()-1][s.route.size()-1].w = 1;
+    s.cost[s.route.size()-1][s.route.size()-1].c =
+    s.cost[s.route.size()-1][s.route.size()-1].w = 0;
     
+    // Computing the cost for each node 
     for(int i = 1; i < s.route.size()-1; i++){
         s.cost[i][i].t =
         s.cost[i][i].c = 0;
         s.cost[i][i].w = 1;
+    }
+
+    // Computing the cost for each subsequence
+    for(int i = 0; i < s.route.size(); i++){
+        for(int j = i+1; j < s.route.size(); j++){
+            s.cost[i][j].t =  matrix[s.route[j-1]][s.route[j]] 
+                             +s.cost[i][j-1].t;          
+            s.cost[j][i].t = s.cost[i][j].t;
+
+            s.cost[i][j].w =  s.cost[i][j-1].w
+                             +s.cost[j][j].w;
+            s.cost[j][i].w = s.cost[j][i].w;
+
+            s.cost[i][j].c =  s.cost[i][j-1].c
+                             +(s.cost[i][j-1].t + matrix[s.route[j-1]][s.route[j]])*(s.cost[j][j].w);
+            s.cost[j][i].c =  s.cost[j][i+1].c
+                             +(s.cost[j][i+1].t + matrix[s.route[i]][s.route[i+1]])*(s.cost[i][i].w);
+
+            std::cout << "[" << i << "]" << " [" << j << "]\n"
+                      << "T: " <<  s.cost[i][j].t << "\n"
+                      << "C: " << s.cost[i][j].c << " (" << getRealCost(i, j) << ")\n"
+                      << "W: " << s.cost[i][j].w << "\n\n";
+
+            std::cout << "[" << j << "]" << " [" << i << "]\n"
+                      << "T: " <<  s.cost[j][i].t << "\n"
+                      << "C: " << s.cost[j][i].c << " (" << getRealCost(j, i) << ")\n"
+                      << "W: " << s.cost[j][i].w << "\n\n";
+        }
     }
 }
 
@@ -359,11 +378,15 @@ void MLP::printRoute(std::vector<int> &route){
         printf("%d%s", route[i]+1, i+1 == route.size()?"\n":", ");
 }
 
-double MLP::getRealCost(tSolution &solution){
+double MLP::getRealCost(int from, int to){
     double sum = 0;
 
-    for(int i = 0; i < dimension; i++)
-        sum+= matrix[solution.route[i]][solution.route[i+1]];
+    if(from > to)
+        for(int i = from; i > to; i--)
+            sum+= sum + matrix[s.route[i]][s.route[i-1]];
+    else
+        for(int i = from; i < to; i++)
+            sum+= sum + matrix[s.route[i]][s.route[i+1]];
     
     return sum;
 }
