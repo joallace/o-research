@@ -139,27 +139,23 @@ void MLP::fillCost(){
     for(int i = 0; i < s.route.size(); i++){
         for(int j = i+1; j < s.route.size(); j++){
             s.cost[i][j].t =  matrix[s.route[j-1]][s.route[j]] 
-                             +s.cost[i][j-1].t;          
-            s.cost[j][i].t = s.cost[i][j].t;
+                             +s.cost[i][j-1].t;
 
             s.cost[i][j].w =  s.cost[i][j-1].w
                              +s.cost[j][j].w;
-            s.cost[j][i].w = s.cost[j][i].w;
 
             s.cost[i][j].c =  s.cost[i][j-1].c
-                             +(s.cost[i][j-1].t + matrix[s.route[j-1]][s.route[j]])*(s.cost[j][j].w);
-            s.cost[j][i].c =  s.cost[j][i+1].c
-                             +(s.cost[j][i+1].t + matrix[s.route[i]][s.route[i+1]])*(s.cost[i][i].w);
+                             +s.cost[j][j].c
+                             +s.cost[j][j].w * (s.cost[i][j-1].t + matrix[s.route[j-1]][s.route[j]]);
 
-            std::cout << "[" << i << "]" << " [" << j << "]\n"
-                      << "T: " <<  s.cost[i][j].t << "\n"
-                      << "C: " << s.cost[i][j].c << " (" << getRealCost(i, j) << ")\n"
-                      << "W: " << s.cost[i][j].w << "\n\n";
 
-            std::cout << "[" << j << "]" << " [" << i << "]\n"
-                      << "T: " <<  s.cost[j][i].t << "\n"
-                      << "C: " << s.cost[j][i].c << " (" << getRealCost(j, i) << ")\n"
-                      << "W: " << s.cost[j][i].w << "\n\n";
+            s.cost[j][i].t = s.cost[i][j].t;
+
+            s.cost[j][i].w = s.cost[i][j].w;
+            
+            s.cost[j][i].c =  s.cost[j-1][i].c
+                             +s.cost[j][j].c
+                             +s.cost[j][j].w * (s.cost[j-1][i].t + matrix[s.route[j]][s.route[j-1]]);
         }
     }
 }
@@ -167,24 +163,26 @@ void MLP::fillCost(){
 // A function that searches for the best nodes i and j to swap 
 bool MLP::swap(){ 
     tMove bestSwap = {0, 0, INFINITY};  //Here we set the cost to INFINITY
-    double delta, rmDelta;
+    tCost delta, rmDelta;
 
     timer.setTime(1);
     // Repeating until the swap with lowest delta is found
     for(int i = 1; i < s.route.size() - 2; i++){
-        rmDelta = -matrix[s.route[i]][s.route[i-1]]
-                  -matrix[s.route[i]][s.route[i+1]];
+        rmDelta.t = -matrix[s.route[i]][s.route[i-1]]
+                    -matrix[s.route[i]][s.route[i+1]];
+        rmDelta.c = ;
         for(int j = i + 2; j < s.route.size() - 1; j++){
-                delta =  rmDelta
-                        +matrix[s.route[i]][s.route[j-1]]
-                        +matrix[s.route[i]][s.route[j+1]]
-                        +matrix[s.route[j]][s.route[i-1]]
-                        +matrix[s.route[j]][s.route[i+1]]
-                        -matrix[s.route[j]][s.route[j-1]]
-                        -matrix[s.route[j]][s.route[j+1]];
+                delta.t =  rmDelta.t
+                          +matrix[s.route[i]][s.route[j-1]]
+                          +matrix[s.route[i]][s.route[j+1]]
+                          +matrix[s.route[j]][s.route[i-1]]
+                          +matrix[s.route[j]][s.route[i+1]]
+                          -matrix[s.route[j]][s.route[j-1]]
+                          -matrix[s.route[j]][s.route[j+1]];
                  
+                 delta.c = ;
             
-            if(delta < 0 && delta < bestSwap.delta){
+            if(delta.c < bestSwap.delta.c){
                 bestSwap.i = i;
                 bestSwap.j = j;
                 bestSwap.delta = delta;
@@ -193,7 +191,7 @@ bool MLP::swap(){
     }
 
     // Making the swap in the route and inserting the delta in the cost
-    if(bestSwap.delta < 0){
+    if(bestSwap.delta.c < s.cost[0][s.route.size()-1].c){
         // s.cost = s.cost + bestSwap.delta;
         std::swap(s.route[bestSwap.i], s.route[bestSwap.j]);
         timer.setTime(1);
@@ -381,12 +379,8 @@ void MLP::printRoute(std::vector<int> &route){
 double MLP::getRealCost(int from, int to){
     double sum = 0;
 
-    if(from > to)
-        for(int i = from; i > to; i--)
-            sum+= sum + matrix[s.route[i]][s.route[i-1]];
-    else
-        for(int i = from; i < to; i++)
-            sum+= sum + matrix[s.route[i]][s.route[i+1]];
+    for(int i = from; i < to; i++)
+        sum+= sum + matrix[s.route[i]][s.route[i+1]];
     
     return sum;
 }

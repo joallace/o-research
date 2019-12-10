@@ -15,9 +15,9 @@
 // A structure that stores the cost from a certain move involving i and j
 typedef struct move{
      int i, j;
-     double delta;
+     tCost delta;
      bool operator<(const move& other) const{
-          return delta < other.delta;
+          return delta.c < other.delta.c;
      }
 }tMove;
 
