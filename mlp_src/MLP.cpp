@@ -12,7 +12,7 @@ MLP::MLP(double ***mPointer, int dimension){
     std::vector<char> neighborList;
 
     // GILS
-    // for(int iMax = 0; iMax < IMAX; iMax++){
+    for(int iMax = 0; iMax < IMAX; iMax++){
         //---=== Construction ===---
         timer.setTime(0);
         construction();
@@ -20,72 +20,85 @@ MLP::MLP(double ***mPointer, int dimension){
         //---====================---
         fillCost();
 
-        printSolution(s);
-
         best = s;
+        final = s;
 
-    //     // RVND
-    //     for(int iILS = 0; iILS < i_ILS; iILS++){
-    //         neighborList = DEFAULT_NEIGHBORLIST;
-    //         while(!neighborList.empty()){
-    //             i = random(neighborList.size())-1;
-    //             switch(neighborList[i]){
-    //                 case 1:
-    //                     if(!swap())
-    //                         neighborList.erase(neighborList.begin() + i);
-    //                     else if(neighborList.size() != NEIGHBORLIST_SIZE)
-    //                         neighborList = DEFAULT_NEIGHBORLIST;
-    //                     break;
+        // RVND
+        for(int iILS = 0; iILS < i_ILS; iILS++){
+            neighborList = DEFAULT_NEIGHBORLIST;
+            while(!neighborList.empty()){
+                i = random(neighborList.size())-1;
+                switch(neighborList[i]){
+                    case 1:
+                        if(!swap())
+                            neighborList.erase(neighborList.begin() + i);
+                        else if(neighborList.size() != NEIGHBORLIST_SIZE)
+                            neighborList = DEFAULT_NEIGHBORLIST;
+                        break;
 
-    //                 case 2:
-    //                     if(!revert())
-    //                         neighborList.erase(neighborList.begin() + i);
-    //                     else if(neighborList.size() != NEIGHBORLIST_SIZE)
-    //                         neighborList = DEFAULT_NEIGHBORLIST;
-    //                     break;
+                    // case 2:
+                    //     if(!revert())
+                    //         neighborList.erase(neighborList.begin() + i);
+                    //     else if(neighborList.size() != NEIGHBORLIST_SIZE)
+                    //         neighborList = DEFAULT_NEIGHBORLIST;
+                    //     break;
 
-    //                 case 3:
-    //                     if(!reinsert(1))
-    //                         neighborList.erase(neighborList.begin() + i);
-    //                     else if(neighborList.size() != NEIGHBORLIST_SIZE)
-    //                         neighborList = DEFAULT_NEIGHBORLIST;
-    //                     break;
+                    // case 3:
+                    //     if(!reinsert(1))
+                    //         neighborList.erase(neighborList.begin() + i);
+                    //     else if(neighborList.size() != NEIGHBORLIST_SIZE)
+                    //         neighborList = DEFAULT_NEIGHBORLIST;
+                    //     break;
 
-    //                 case 4:
-    //                     if(!reinsert(2))
-    //                         neighborList.erase(neighborList.begin() + i);
-    //                     else if(neighborList.size() != NEIGHBORLIST_SIZE)
-    //                         neighborList = DEFAULT_NEIGHBORLIST;
-    //                     break;
+                    // case 4:
+                    //     if(!reinsert(2))
+                    //         neighborList.erase(neighborList.begin() + i);
+                    //     else if(neighborList.size() != NEIGHBORLIST_SIZE)
+                    //         neighborList = DEFAULT_NEIGHBORLIST;
+                    //     break;
 
-    //                 case 5:
-    //                     if(!reinsert(3))
-    //                         neighborList.erase(neighborList.begin() + i);
-    //                     else if(neighborList.size() != NEIGHBORLIST_SIZE)
-    //                         neighborList = DEFAULT_NEIGHBORLIST;
-    //                     break;
-    //             }
-    //         }
-    //         if(s.cost[0][s.route.size()-1].c < best.cost[0][best.route.size()-1].c){
-    //             best = s;
-    //             iILS = 0;
-    //         }
-    //         else{
-    //             s = best;
-    //         }
-    //         perturb();
-    //     }
-    //     if(best.cost[0][best.route.size()-1].c < final.cost[0][final.route.size()-1].c){
-    //         final = best;
-    //     }
-    //     s.route.clear();
-    // }
-    // timer.stop();
+                    // case 5:
+                    //     if(!reinsert(3))
+                    //         neighborList.erase(neighborList.begin() + i);
+                    //     else if(neighborList.size() != NEIGHBORLIST_SIZE)
+                    //         neighborList = DEFAULT_NEIGHBORLIST;
+                    //     break;
+                }
+            }
+            if(s.cost[0][s.LAST].c < best.cost[0][best.LAST].c){
+                best = s;
+                iILS = 0;
+            }
+            else{
+                s = best;
+            }
+            perturb();
+        }
+        if(best.cost[0][best.LAST].c < final.cost[0][final.LAST].c){
+            final = best;
+        }
+        s.route.clear();
+    }
+    timer.stop();
 }
 
 // Just a function that returns a random number from [1, num]
 inline int MLP::random(int num){
     return (rand()%num)+1;
+}
+
+// tCost MLP::concatenate(tCost &s1, tCost &s2, int last, int first){
+//     return tCost{
+//         s1.w + s2.w,
+//         s1.t + matrix[s.route[last]][s.route[first]] + s2.t,
+//         s1.c + s1.w*(matrix[s.route[last]][s.route[first]] + s1.t) + s2.c,
+//     };
+// }
+
+void MLP::concatenate(tCost &s1, const tCost &s2, int last, int first){
+    s1.t += matrix[s.route[last]][s.route[first]] + s2.t;
+    s1.c += s1.w*(matrix[s.route[last]][s.route[first]] + s1.t) + s2.c;
+    s1.w += s2.w;
 }
 
 // Constructs a feasible initial solution
@@ -124,12 +137,12 @@ void MLP::fillCost(){
     s.cost[0][0].c =
     s.cost[0][0].w = 0;
 
-    s.cost[s.route.size()-1][s.route.size()-1].t =
-    s.cost[s.route.size()-1][s.route.size()-1].c =
-    s.cost[s.route.size()-1][s.route.size()-1].w = 0;
+    s.cost[s.LAST][s.LAST].t =
+    s.cost[s.LAST][s.LAST].c =
+    s.cost[s.LAST][s.LAST].w = 0;
     
     // Computing the cost for each node 
-    for(int i = 1; i < s.route.size()-1; i++){
+    for(int i = 1; i < s.LAST; i++){
         s.cost[i][i].t =
         s.cost[i][i].c = 0;
         s.cost[i][i].w = 1;
@@ -162,25 +175,18 @@ void MLP::fillCost(){
 
 // A function that searches for the best nodes i and j to swap 
 bool MLP::swap(){ 
-    tMove bestSwap = {0, 0, INFINITY};  //Here we set the cost to INFINITY
-    tCost delta, rmDelta;
+    tMove bestSwap = {0, 0, {0, INFINITY, INFINITY}};  //Here we set the cost to INFINITY
+    tCost delta;
 
     timer.setTime(1);
     // Repeating until the swap with lowest delta is found
     for(int i = 1; i < s.route.size() - 2; i++){
-        rmDelta.t = -matrix[s.route[i]][s.route[i-1]]
-                    -matrix[s.route[i]][s.route[i+1]];
-        rmDelta.c = ;
-        for(int j = i + 2; j < s.route.size() - 1; j++){
-                delta.t =  rmDelta.t
-                          +matrix[s.route[i]][s.route[j-1]]
-                          +matrix[s.route[i]][s.route[j+1]]
-                          +matrix[s.route[j]][s.route[i-1]]
-                          +matrix[s.route[j]][s.route[i+1]]
-                          -matrix[s.route[j]][s.route[j-1]]
-                          -matrix[s.route[j]][s.route[j+1]];
-                 
-                 delta.c = ;
+        for(int j = i + 2; j < s.LAST; j++){
+            delta = s.cost[0][i-1];
+            concatenate(delta, s.cost[j][j], i-1, i);
+            concatenate(delta, s.cost[i+1][j-1], i, i+1);
+            concatenate(delta, s.cost[i][i], j-1, j);
+            concatenate(delta, s.cost[j+1][s.LAST], j, j+1);
             
             if(delta.c < bestSwap.delta.c){
                 bestSwap.i = i;
@@ -190,10 +196,13 @@ bool MLP::swap(){
         }
     }
 
+    std::cout << "Cost: " << s.cost[0][s.LAST].c << "\n"
+              << "Found: " << bestSwap.delta.c << "\n\n";
+
     // Making the swap in the route and inserting the delta in the cost
-    if(bestSwap.delta.c < s.cost[0][s.route.size()-1].c){
-        // s.cost = s.cost + bestSwap.delta;
+    if(bestSwap.delta.c < s.cost[0][s.LAST].c){
         std::swap(s.route[bestSwap.i], s.route[bestSwap.j]);
+        fillCost();
         timer.setTime(1);
         return true;
     }
@@ -204,18 +213,17 @@ bool MLP::swap(){
 
 // A function that searches for the best range [i,j] to reverse
 bool MLP::revert(){ 
-    tMove bestReversion = {0, 0, INFINITY};
-    double delta;
+    tMove bestReversion = {0, 0, {0, 0, INFINITY}};
+    tCost delta;
 
     timer.setTime(2);
     for(int i = 1; i < s.route.size() - 3; i++){
-        for(int j = i + 1; j < s.route.size() - 1; j++){
-            delta =  matrix[s.route[i]][s.route[j+1]]
-                    +matrix[s.route[j]][s.route[i-1]]
-                    -matrix[s.route[i]][s.route[i-1]]
-                    -matrix[s.route[j]][s.route[j+1]];
+        for(int j = i + 1; j < s.LAST; j++){
+            delta = s.cost[0][i-1];
+            concatenate(delta, s.cost[j][i], i-1, i);
+            concatenate(delta, s.cost[j+1][s.LAST], j, j+1);
             
-            if(delta < 0 && delta < bestReversion.delta){
+            if(delta.c < bestReversion.delta.c){
                 bestReversion.i = i;
                 bestReversion.j = j;
                 bestReversion.delta = delta;
@@ -223,9 +231,12 @@ bool MLP::revert(){
         }
     } 
 
-    if(bestReversion.delta < 0){
-        // s.cost = s.cost + bestReversion.delta;
+    std::cout << "Cost: " << s.cost[0][s.LAST].c << "\n"
+              << "Found: " << bestReversion.delta.c << "\n\n";
+
+    if(bestReversion.delta.c < s.cost[0][s.LAST].c){
         std::reverse(s.route.begin() + bestReversion.i, s.route.begin() + bestReversion.j+1);
+        fillCost();
         timer.setTime(2);
         return true;
     }
@@ -235,53 +246,53 @@ bool MLP::revert(){
 }
 
 // A function that searches for the best j position to reinsert a subsequence [i,num)
-bool MLP::reinsert(int num){ 
-    tMove bestReinsertion = {0, 0, INFINITY};
-    double delta, rmDelta;
+// bool MLP::reinsert(int num){ 
+//     tMove bestReinsertion = {0, 0, {INFINITY, INFINITY, 0}};
+//     double delta, rmDelta;
 
-    timer.setTime(2+num);
-    for(int i = 1; i < s.route.size() - num; i++){
-        rmDelta =  matrix[s.route[i-1]][s.route[i+num]]
-                  -matrix[s.route[i-1]][s.route[i]]
-                  -matrix[s.route[i+(num-1)]][s.route[i+num]];
-        for(int j = 1; j < s.route.size() - num; j++){
-            // Checking if the j index is the same as the beginning of the subsequence
-            if(j != i){       
-                if(j > i)
-                    delta =  rmDelta
-                            +matrix[s.route[j+(num-1)]][s.route[i]]
-                            +matrix[s.route[i+(num-1)]][s.route[j+num]]
-                            -matrix[s.route[j+(num-1)]][s.route[j+num]];
-                else
-                    delta =  rmDelta 
-                            +matrix[s.route[j-1]][s.route[i]]
-                            +matrix[s.route[i+(num-1)]][s.route[j]] 
-                            -matrix[s.route[j]][s.route[j-1]];
+//     timer.setTime(2+num);
+//     for(int i = 1; i < s.route.size() - num; i++){
+//         rmDelta =  matrix[s.route[i-1]][s.route[i+num]]
+//                   -matrix[s.route[i-1]][s.route[i]]
+//                   -matrix[s.route[i+(num-1)]][s.route[i+num]];
+//         for(int j = 1; j < s.route.size() - num; j++){
+//             // Checking if the j index is the same as the beginning of the subsequence
+//             if(j != i){       
+//                 if(j > i)
+//                     delta =  rmDelta
+//                             +matrix[s.route[j+(num-1)]][s.route[i]]
+//                             +matrix[s.route[i+(num-1)]][s.route[j+num]]
+//                             -matrix[s.route[j+(num-1)]][s.route[j+num]];
+//                 else
+//                     delta =  rmDelta 
+//                             +matrix[s.route[j-1]][s.route[i]]
+//                             +matrix[s.route[i+(num-1)]][s.route[j]] 
+//                             -matrix[s.route[j]][s.route[j-1]];
                 
-                if(delta < 0 && delta < bestReinsertion.delta){
-                    bestReinsertion.i = i;
-                    bestReinsertion.j = j;
-                    bestReinsertion.delta = delta;
-                }
-            }
-        }
-    }
+//                 if(delta < 0 && delta < bestReinsertion.delta){
+//                     bestReinsertion.i = i;
+//                     bestReinsertion.j = j;
+//                     bestReinsertion.delta = delta;
+//                 }
+//             }
+//         }
+//     }
     
-    if(bestReinsertion.delta < 0){
-        // s.cost = s.cost + bestReinsertion.delta;
+//     if(bestReinsertion.delta < 0){
+//         // s.cost = s.cost + bestReinsertion.delta;
         
-        std::vector<int> subroute(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i + num);
+//         std::vector<int> subroute(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i + num);
         
-        s.route.erase(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i + num);
-        s.route.insert(s.route.begin() + bestReinsertion.j, subroute.begin(), subroute.end());
+//         s.route.erase(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i + num);
+//         s.route.insert(s.route.begin() + bestReinsertion.j, subroute.begin(), subroute.end());
         
-        timer.setTime(2+num);
-        return true;
-    }
+//         timer.setTime(2+num);
+//         return true;
+//     }
 
-    timer.setTime(2+num);
-    return false;
-}
+//     timer.setTime(2+num);
+//     return false;
+// }
 
 // A function that perturbs the solution using the Double-bridge method
 void MLP::perturb(){
@@ -349,7 +360,8 @@ double MLP::getRealCost(){
     double sum = 0;
 
     for(int i = 0; i < dimension; i++)
-        sum+= matrix[final.route[i]][final.route[i+1]];
+        for(int j = 0; j < i; j++)
+            sum += matrix[final.route[j]][final.route[j+1]];
     
     return sum;
 }
@@ -380,7 +392,7 @@ double MLP::getRealCost(int from, int to){
     double sum = 0;
 
     for(int i = from; i < to; i++)
-        sum+= sum + matrix[s.route[i]][s.route[i+1]];
+        sum += sum + matrix[s.route[i]][s.route[i+1]];
     
     return sum;
 }

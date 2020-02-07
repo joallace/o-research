@@ -5,32 +5,15 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+#include "Structures.h"
 #include "Timer.h"
 
+#define IMAX 50
 #define SUBTOUR_SIZE 3
 #define NEIGHBORLIST_SIZE 5
-#define DEFAULT_NEIGHBORLIST {1, 2, 3, 4, 5}
-#define IMAX 50
-
-// A structure that stores the cost from a certain move involving i and j
-typedef struct move{
-     int i, j;
-     tCost delta;
-     bool operator<(const move& other) const{
-          return delta.c < other.delta.c;
-     }
-}tMove;
-
-typedef struct{
-     double t, c;
-     int w;
-}tCost;
-
-// A structure that represents a solution
-typedef struct{
-     std::vector<int> route;
-     std::vector<std::vector<tCost>> cost;
-}tSolution;
+// #define DEFAULT_NEIGHBORLIST {1, 2, 3, 4, 5}
+#define DEFAULT_NEIGHBORLIST {1}
+#define LAST route.size()-1
 
 class MLP{
      tSolution s, best, final;
@@ -38,14 +21,18 @@ class MLP{
      int dimension;
      std::vector<int> candidateList;
      Timer timer;
+     //friend subCost subCost::operator+(const subCost& other) const;
 
      void construction(),
           fillCost(),
-          perturb();
+          perturb(),
+          concatenate(tCost &s1, const tCost &s2, int last, int first);
 
      bool swap(),
           revert(),
           reinsert(int num);
+
+     // tCost concatenate(tCost &s1, tCost &s2, int last, int first);
          
      int random(int num);
 
