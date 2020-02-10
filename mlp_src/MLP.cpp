@@ -18,6 +18,23 @@ MLP::MLP(double ***mPointer, int dimension){
         construction();
         timer.setTime(0);
         //---====================---
+
+        // Setting up the depot
+        s.cost[0][0].t =
+        s.cost[0][0].c =
+        s.cost[0][0].w = 0;
+
+        s.cost[s.LAST][s.LAST].t =
+        s.cost[s.LAST][s.LAST].c =
+        s.cost[s.LAST][s.LAST].w = 0;
+        
+        // Computing the cost for each node 
+        for(int i = 1; i < s.LAST; i++){
+            s.cost[i][i].t =
+            s.cost[i][i].c = 0;
+            s.cost[i][i].w = 1;
+        }
+
         fillCost();
 
         best = s;
@@ -73,6 +90,7 @@ MLP::MLP(double ***mPointer, int dimension){
                 s = best;
             }
             perturb();
+            fillCost();
         }
         if(best.cost[0][best.LAST].c < final.cost[0][final.LAST].c){
             final = best;
@@ -132,22 +150,6 @@ void MLP::construction(){
 
 // Fill the solution cost vector
 void MLP::fillCost(){
-    // Setting up the depot
-    s.cost[0][0].t =
-    s.cost[0][0].c =
-    s.cost[0][0].w = 0;
-
-    s.cost[s.LAST][s.LAST].t =
-    s.cost[s.LAST][s.LAST].c =
-    s.cost[s.LAST][s.LAST].w = 0;
-    
-    // Computing the cost for each node 
-    for(int i = 1; i < s.LAST; i++){
-        s.cost[i][i].t =
-        s.cost[i][i].c = 0;
-        s.cost[i][i].w = 1;
-    }
-
     // Computing the cost for each subsequence
     for(int i = 0; i < s.route.size(); i++){
         for(int j = i+1; j < s.route.size(); j++){
@@ -202,7 +204,9 @@ bool MLP::swap(){
     // Making the swap in the route and inserting the delta in the cost
     if(bestSwap.delta.c < s.cost[0][s.LAST].c){
         std::swap(s.route[bestSwap.i], s.route[bestSwap.j]);
+
         fillCost();
+
         timer.setTime(1);
         return true;
     }
@@ -236,7 +240,9 @@ bool MLP::revert(){
 
     if(bestReversion.delta.c < s.cost[0][s.LAST].c){
         std::reverse(s.route.begin() + bestReversion.i, s.route.begin() + bestReversion.j+1);
+
         fillCost();
+
         timer.setTime(2);
         return true;
     }
@@ -246,53 +252,50 @@ bool MLP::revert(){
 }
 
 // A function that searches for the best j position to reinsert a subsequence [i,num)
-// bool MLP::reinsert(int num){ 
-//     tMove bestReinsertion = {0, 0, {INFINITY, INFINITY, 0}};
-//     double delta, rmDelta;
+bool MLP::reinsert(int num){ 
+    tMove bestReinsertion = {0, 0, {0, 0, INFINITY}};
+    tCost delta;
 
-//     timer.setTime(2+num);
-//     for(int i = 1; i < s.route.size() - num; i++){
-//         rmDelta =  matrix[s.route[i-1]][s.route[i+num]]
-//                   -matrix[s.route[i-1]][s.route[i]]
-//                   -matrix[s.route[i+(num-1)]][s.route[i+num]];
-//         for(int j = 1; j < s.route.size() - num; j++){
-//             // Checking if the j index is the same as the beginning of the subsequence
-//             if(j != i){       
-//                 if(j > i)
-//                     delta =  rmDelta
-//                             +matrix[s.route[j+(num-1)]][s.route[i]]
-//                             +matrix[s.route[i+(num-1)]][s.route[j+num]]
-//                             -matrix[s.route[j+(num-1)]][s.route[j+num]];
-//                 else
-//                     delta =  rmDelta 
-//                             +matrix[s.route[j-1]][s.route[i]]
-//                             +matrix[s.route[i+(num-1)]][s.route[j]] 
-//                             -matrix[s.route[j]][s.route[j-1]];
+    timer.setTime(2+num);
+    for(int i = 1; i < s.route.size() - num; i++){
+        for(int j = 1; j < s.route.size() - num; j++){
+            // Checking if the j index is the same as the beginning of the subsequence
+            if(j != i){       
+                if(j > i)
+                    // delta =  rmDelta
+                    //         +matrix[s.route[j+(num-1)]][s.route[i]]
+                    //         +matrix[s.route[i+(num-1)]][s.route[j+num]]
+                    //         -matrix[s.route[j+(num-1)]][s.route[j+num]];
+                // else
+                    // delta =  rmDelta 
+                    //         +matrix[s.route[j-1]][s.route[i]]
+                    //         +matrix[s.route[i+(num-1)]][s.route[j]] 
+                    //         -matrix[s.route[j]][s.route[j-1]];
                 
-//                 if(delta < 0 && delta < bestReinsertion.delta){
-//                     bestReinsertion.i = i;
-//                     bestReinsertion.j = j;
-//                     bestReinsertion.delta = delta;
-//                 }
-//             }
-//         }
-//     }
+                if(delta.c < bestReinsertion.delta.c){
+                    bestReinsertion.i = i;
+                    bestReinsertion.j = j;
+                    bestReinsertion.delta = delta;
+                }
+            }
+        }
+    }
     
-//     if(bestReinsertion.delta < 0){
-//         // s.cost = s.cost + bestReinsertion.delta;
+    if(bestReinsertion.delta.c < s.cost[0][s.LAST].c){       
+        std::vector<int> subroute(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i + num);
         
-//         std::vector<int> subroute(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i + num);
+        s.route.erase(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i + num);
+        s.route.insert(s.route.begin() + bestReinsertion.j, subroute.begin(), subroute.end());
         
-//         s.route.erase(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i + num);
-//         s.route.insert(s.route.begin() + bestReinsertion.j, subroute.begin(), subroute.end());
-        
-//         timer.setTime(2+num);
-//         return true;
-//     }
+        fillCost();
 
-//     timer.setTime(2+num);
-//     return false;
-// }
+        timer.setTime(2+num);
+        return true;
+    }
+
+    timer.setTime(2+num);
+    return false;
+}
 
 // A function that perturbs the solution using the Double-bridge method
 void MLP::perturb(){
@@ -305,20 +308,10 @@ void MLP::perturb(){
     std::vector<int> subroute1(s.route.begin() + i, s.route.begin() + i + iSize + 1),
                      subroute2(s.route.begin() + j, s.route.begin() + j + jSize + 1);
 
-    // s.cost -=  matrix[s.route[i-1]][s.route[i]]
-    //         +matrix[s.route[i+iSize]][s.route[i+iSize+1]]
-    //         +((i+iSize+1 == j)? 0 : matrix[s.route[j-1]][s.route[j]])   //Checks if the subsequences are adjacent
-    //         +matrix[s.route[j+jSize]][s.route[j+jSize+1]];
-
     s.route.erase(s.route.begin() + j, s.route.begin() + j + jSize + 1);
     s.route.erase(s.route.begin() + i, s.route.begin() + i + iSize + 1);
     s.route.insert(s.route.begin() + i, subroute2.begin(), subroute2.end());
     s.route.insert(s.route.begin() + j + (jSize - iSize), subroute1.begin(), subroute1.end());
-
-    // s.cost +=  matrix[s.route[i-1]][s.route[i]]
-    //         +matrix[s.route[i+jSize]][s.route[i+jSize+1]]
-    //         +((i+iSize+1 == j)? 0 : matrix[s.route[j + (jSize-iSize)-1]][s.route[j + (jSize-iSize)]])
-    //         +matrix[s.route[j+jSize]][s.route[j+jSize+1]];
 }
 
 void MLP::printSolution(){
