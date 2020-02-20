@@ -11,8 +11,8 @@
 #define IMAX 50
 #define SUBTOUR_SIZE 3
 #define NEIGHBORLIST_SIZE 5
-// #define DEFAULT_NEIGHBORLIST {1, 2, 3, 4, 5}
-#define DEFAULT_NEIGHBORLIST {1}
+#define DEFAULT_NEIGHBORLIST {1, 2, 3, 4, 5}
+// #define DEFAULT_NEIGHBORLIST {3, 4, 5}
 #define LAST route.size()-1
 
 class MLP{
@@ -40,7 +40,8 @@ class MLP{
 
      void printSolution(tSolution &solution),
           printRoute(std::vector<int> &route);
-     double getRealCost(int from, int to);
+     double getRealCost(int from, int to),
+            getCurrentRealCost();
 
      //-----===============================-----
 
