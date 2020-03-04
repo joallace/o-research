@@ -8,11 +8,11 @@
 #include "Structures.h"
 #include "Timer.h"
 
-#define IMAX 50
+#define IMAX 10
 #define SUBTOUR_SIZE 3
 #define NEIGHBORLIST_SIZE 5
 #define DEFAULT_NEIGHBORLIST {1, 2, 3, 4, 5}
-// #define DEFAULT_NEIGHBORLIST {3, 4, 5}
+//#define DEFAULT_NEIGHBORLIST {3,4,5}
 #define LAST route.size()-1
 
 class MLP{
@@ -26,7 +26,7 @@ class MLP{
      void construction(),
           fillCost(),
           perturb(),
-          concatenate(tCost &s1, const tCost &s2, int last, int first);
+          concatenate(tCost &s1, const tCost &s2, int s1_last, int s2_first);
 
      bool swap(),
           revert(),
@@ -40,8 +40,8 @@ class MLP{
 
      void printSolution(tSolution &solution),
           printRoute(std::vector<int> &route);
-     double getRealCost(int from, int to),
-            getCurrentRealCost();
+
+     double getSolutionCost(tSolution &solution);
 
      //-----===============================-----
 

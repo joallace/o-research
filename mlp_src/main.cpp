@@ -7,7 +7,7 @@ int main(int argc, char** argv) {
     
     readData(argc, argv, &dimension, &matrizAdj);
     
-    srand(time(NULL));
+    srand(80);
 
     std::cout << std::endl;
 
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 
         std::cout << "Total cost: " << mlp.getCost() << " (" << mlp.getRealCost() << ")\n\n";
 
-        // mlp.printTimes();
+        mlp.printTimes();
     }
 
     return 0;

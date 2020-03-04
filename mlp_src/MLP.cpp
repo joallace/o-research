@@ -8,11 +8,12 @@ MLP::MLP(double ***mPointer, int dimension){
     s.cost.resize(dimension+1, std::vector<tCost>(dimension+1));
     
     // Defining variables
-    int i, i_ILS = dimension>=150 ? dimension/2 : dimension;
+    int i, i_ILS = std::min(100, dimension);
     std::vector<char> neighborList;
 
     // GILS
     for(int iMax = 0; iMax < IMAX; iMax++){
+        //std::cout << "Starting a new GILS iteration\n";
         //---=== Construction ===---
         timer.setTime(0);
         construction();
@@ -29,7 +30,7 @@ MLP::MLP(double ***mPointer, int dimension){
         s.cost[s.LAST][s.LAST].w = 0;
 
         // Computing the cost for each node 
-        for(int i = 1; i < s.LAST; i++){
+        for(int i = 1; i < s.route.size(); i++){
             s.cost[i][i].t =
             s.cost[i][i].c = 0;
             s.cost[i][i].w = 1;
@@ -37,8 +38,9 @@ MLP::MLP(double ***mPointer, int dimension){
 
         fillCost();
 
+        if(iMax == 0)
+            final = s;
         best = s;
-        final = s;
 
         // RVND
         for(int iILS = 0; iILS < i_ILS; iILS++){
@@ -93,8 +95,9 @@ MLP::MLP(double ***mPointer, int dimension){
             fillCost();
         }
         if(best.cost[0][best.LAST].c < final.cost[0][final.LAST].c){
+            std::cout << "\nPrevious: " << final.cost[0][final.LAST].c << "(" << getSolutionCost(final) << ")\n";
             final = best;
-            std::cout << "\nNew FINAL cost: " << getRealCost() << "\n\n";
+            std::cout << "New FINAL cost: " << final.cost[0][final.LAST].c << "(" << getSolutionCost(final) << ")\n\n";
         }
         s.route.clear();
     }
@@ -114,9 +117,9 @@ inline int MLP::random(int num){
 //     };
 // }
 
-void MLP::concatenate(tCost &s1, const tCost &s2, int last, int first){
-    s1.t += matrix[s.route[last]][s.route[first]] + s2.t;
-    s1.c += s2.w*(s1.t + matrix[s.route[last]][s.route[first]]) + s2.c;
+void MLP::concatenate(tCost &s1, const tCost &s2, int s1_last, int s2_first){
+    s1.c += s2.w*(s1.t + matrix[s.route[s1_last]][s.route[s2_first]]) + s2.c;
+    s1.t += matrix[s.route[s1_last]][s.route[s2_first]] + s2.t;
     s1.w += s2.w;
 }
 
@@ -140,8 +143,8 @@ void MLP::construction(){
             }
         );
 
-        interval = (int) (random(10)/10.0 * candidateList.size());
-        last = random(interval == 0 ? candidateList.size() : interval) - 1;
+        interval = (int) (random(25)/100.0 * candidateList.size());
+        last = random(interval == 0 ? 1 : interval) - 1;
 
         s.route.push_back(candidateList[last]);
         candidateList.erase(candidateList.begin() + last);
@@ -178,13 +181,13 @@ void MLP::fillCost(){
 
 // A function that searches for the best nodes i and j to swap 
 bool MLP::swap(){ 
-    tMove bestSwap = {0, 0, {0, INFINITY, INFINITY}};  //Here we set the cost to INFINITY
+    tMove bestSwap = {0, 0, {0, 0, INFINITY}};  //Here we set the cost to INFINITY
     tCost delta;
 
     timer.setTime(1);
     // Repeating until the swap with lowest delta is found
     for(int i = 1; i < s.route.size() - 2; i++){
-        for(int j = i + 2; j < s.LAST; j++){
+        for(int j = i + 2; j < s.route.size() - 1; j++){
             delta = s.cost[0][i-1];
             concatenate(delta, s.cost[j][j], i-1, i);
             concatenate(delta, s.cost[i+1][j-1], i, i+1);
@@ -206,7 +209,6 @@ bool MLP::swap(){
     if(bestSwap.delta.c < s.cost[0][s.LAST].c){
         std::swap(s.route[bestSwap.i], s.route[bestSwap.j]);
         fillCost();
-        std::cout << "New cost: " << getCurrentRealCost() << "\n";
         timer.setTime(1);
         return true;
     }
@@ -222,7 +224,7 @@ bool MLP::revert(){
 
     timer.setTime(2);
     for(int i = 1; i < s.route.size() - 3; i++){
-        for(int j = i + 1; j < s.LAST; j++){
+        for(int j = i + 1; j < s.route.size() - 1; j++){
             delta = s.cost[0][i-1];
             concatenate(delta, s.cost[j][i], i-1, i);
             concatenate(delta, s.cost[j+1][s.LAST], j, j+1);
@@ -241,7 +243,6 @@ bool MLP::revert(){
     if(bestReversion.delta.c < s.cost[0][s.LAST].c){
         std::reverse(s.route.begin() + bestReversion.i, s.route.begin() + bestReversion.j+1);
         fillCost();
-        std::cout << "New cost: " << getCurrentRealCost() << "\n";
         timer.setTime(2);
         return true;
     }
@@ -290,7 +291,6 @@ bool MLP::reinsert(int num){
         fillCost();
 
         timer.setTime(2+num);
-        std::cout << "New cost: " << getCurrentRealCost() << "\n";
         return true;
     }
 
@@ -353,7 +353,7 @@ double MLP::getCost(){
 double MLP::getRealCost(){
     double sum = 0;
 
-    for(int i = 0; i < dimension; i++)
+    for(int i = 0; i <= dimension; i++)
         for(int j = 0; j < i; j++)
             sum += matrix[final.route[j]][final.route[j+1]];
     
@@ -382,23 +382,23 @@ void MLP::printRoute(std::vector<int> &route){
         printf("%d%s", route[i]+1, i+1 == route.size()?"\n":", ");
 }
 
-double MLP::getCurrentRealCost(){
+double MLP::getSolutionCost(tSolution &solution){
     double sum = 0;
 
-    for(int i = 0; i < dimension; i++)
+    for(int i = 0; i <= dimension; i++)
         for(int j = 0; j < i; j++)
-            sum += matrix[s.route[j]][s.route[j+1]];
+            sum += matrix[solution.route[j]][solution.route[j+1]];
     
     return sum;
 }
 
-double MLP::getRealCost(int from, int to){
-    double sum = 0;
+// double MLP::getSolutionCost(tSolution &sol){
+// 	double custo = 0;
+// 	for (int u = 0; u < dimension; u++){
+// 		custo += (dimension - u) * matrix[sol.route[u]][sol.route[u + 1]];
+// 	}
 
-    for(int i = from; i < to; i++)
-        sum += sum + matrix[s.route[i]][s.route[i+1]];
-    
-    return sum;
-}
+// 	return custo;
+// }
 
 //------------============================================------------
