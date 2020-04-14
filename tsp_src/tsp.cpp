@@ -1,4 +1,4 @@
-#include "TSP.h"
+#include "tsp.h"
 
 TSP::TSP(double ***mPointer, int dimension){
     // Setting up

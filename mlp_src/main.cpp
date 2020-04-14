@@ -1,5 +1,5 @@
-#include "readData.h"
-#include "MLP.h"
+#include "read_data.h"
+#include "mlp.h"
 
 int main(int argc, char** argv) {
     double ** matrizAdj; // Adjacency matrix

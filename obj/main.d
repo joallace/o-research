@@ -1,2 +1,2 @@
-obj/main.o: mlp_src/main.cpp mlp_src/readData.h mlp_src/MLP.h \
- mlp_src/Structures.h mlp_src/Timer.h
+obj/main.o: tsp_src/main.cpp tsp_src/read_data.h tsp_src/tsp.h \
+ tsp_src/timer.h

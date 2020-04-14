@@ -5,7 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
-#include "Timer.h"
+#include "timer.h"
 
 #define SUBTOUR_SIZE 3
 #define NEIGHBORLIST_SIZE 5

@@ -1,4 +1,4 @@
-#include "MLP.h"
+#include "mlp.h"
 
 MLP::MLP(double ***mPointer, int dimension){
     // Setting up
@@ -13,7 +13,6 @@ MLP::MLP(double ***mPointer, int dimension){
 
     // GILS
     for(int iMax = 0; iMax < IMAX; iMax++){
-        //std::cout << "Starting a new GILS iteration\n";
         //---=== Construction ===---
         timer.setTime(0);
         construction();
@@ -95,7 +94,7 @@ MLP::MLP(double ***mPointer, int dimension){
             fillCost();
         }
         if(best.cost[0][best.LAST].c < final.cost[0][final.LAST].c){
-            std::cout << "\nPrevious: " << final.cost[0][final.LAST].c << "(" << getSolutionCost(final) << ")\n";
+            std::cout << "Previous: " << final.cost[0][final.LAST].c << "(" << getSolutionCost(final) << ")\n";
             final = best;
             std::cout << "New FINAL cost: " << final.cost[0][final.LAST].c << "(" << getSolutionCost(final) << ")\n\n";
         }
@@ -105,19 +104,12 @@ MLP::MLP(double ***mPointer, int dimension){
 }
 
 // Just a function that returns a random number from [1, num]
-inline int MLP::random(int num){
+inline int MLP::random(int num) const{
     return (rand()%num)+1;
 }
 
-// tCost MLP::concatenate(tCost &s1, tCost &s2, int last, int first){
-//     return tCost{
-//         s1.w + s2.w,
-//         s1.t + matrix[s.route[last]][s.route[first]] + s2.t,
-//         s1.c + s1.w*(matrix[s.route[last]][s.route[first]] + s1.t) + s2.c,
-//     };
-// }
-
-void MLP::concatenate(tCost &s1, const tCost &s2, int s1_last, int s2_first){
+// Concatenate two subsequences
+inline void MLP::concatenate(tCost &s1, const tCost &s2, int s1_last, int s2_first) const{
     s1.c += s2.w*(s1.t + matrix[s.route[s1_last]][s.route[s2_first]]) + s2.c;
     s1.t += matrix[s.route[s1_last]][s.route[s2_first]] + s2.t;
     s1.w += s2.w;
@@ -179,36 +171,59 @@ void MLP::fillCost(){
     }
 }
 
+// Computes the cost in the [first, last] interval
+void MLP::computeCost(int first, int last){
+    for(int i = 0; i <= last; i++){
+        for(int j = i<first? first : i+1; j < s.route.size(); j++){
+            s.cost[i][j].t =  matrix[s.route[j-1]][s.route[j]] 
+                             +s.cost[i][j-1].t;
+
+            s.cost[i][j].w =  s.cost[i][j-1].w
+                             +s.cost[j][j].w;
+
+            s.cost[i][j].c =  s.cost[i][j-1].c
+                             +s.cost[j][j].c
+                             +s.cost[j][j].w * (s.cost[i][j-1].t + matrix[s.route[j-1]][s.route[j]]);
+
+
+            s.cost[j][i].t = s.cost[i][j].t;
+
+            s.cost[j][i].w = s.cost[i][j].w;
+            
+            s.cost[j][i].c =  s.cost[j-1][i].c
+                             +s.cost[j][j].c
+                             +s.cost[j][j].w * (s.cost[j-1][i].t + matrix[s.route[j]][s.route[j-1]]);
+        }
+    }
+}
+
 // A function that searches for the best nodes i and j to swap 
 bool MLP::swap(){ 
     tMove bestSwap = {0, 0, {0, 0, INFINITY}};  //Here we set the cost to INFINITY
-    tCost delta;
+    tCost cost;
 
     timer.setTime(1);
-    // Repeating until the swap with lowest delta is found
+    // Repeating until the swap with lowest cost is found
     for(int i = 1; i < s.route.size() - 2; i++){
         for(int j = i + 2; j < s.route.size() - 1; j++){
-            delta = s.cost[0][i-1];
-            concatenate(delta, s.cost[j][j], i-1, i);
-            concatenate(delta, s.cost[i+1][j-1], i, i+1);
-            concatenate(delta, s.cost[i][i], j-1, j);
-            concatenate(delta, s.cost[j+1][s.LAST], j, j+1);
+            cost = s.cost[0][i-1];
+            concatenate(cost, s.cost[j][j], i-1, i);
+            concatenate(cost, s.cost[i+1][j-1], i, i+1);
+            concatenate(cost, s.cost[i][i], j-1, j);
+            concatenate(cost, s.cost[j+1][s.LAST], j, j+1);
             
-            if(delta.c < bestSwap.delta.c){
+            if(cost.c < bestSwap.cost.c){
                 bestSwap.i = i;
                 bestSwap.j = j;
-                bestSwap.delta = delta;
+                bestSwap.cost = cost;
             }
         }
     }
 
-    // std::cout << "Cost: " << s.cost[0][s.LAST].c << "(" << getCurrentRealCost() << ")" << "\n"
-    //           << "Found: " << bestSwap.delta.c << "\n\n";
-
-    // Making the swap in the route and inserting the delta in the cost
-    if(bestSwap.delta.c < s.cost[0][s.LAST].c){
+    // Making the swap in the route and inserting the cost in the cost
+    if(bestSwap.cost.c < s.cost[0][s.LAST].c){
         std::swap(s.route[bestSwap.i], s.route[bestSwap.j]);
-        fillCost();
+        computeCost(bestSwap.i, bestSwap.j);
         timer.setTime(1);
         return true;
     }
@@ -220,29 +235,26 @@ bool MLP::swap(){
 // A function that searches for the best range [i,j] to reverse
 bool MLP::revert(){ 
     tMove bestReversion = {0, 0, {0, 0, INFINITY}};
-    tCost delta;
+    tCost cost;
 
     timer.setTime(2);
     for(int i = 1; i < s.route.size() - 3; i++){
         for(int j = i + 1; j < s.route.size() - 1; j++){
-            delta = s.cost[0][i-1];
-            concatenate(delta, s.cost[j][i], i-1, i);
-            concatenate(delta, s.cost[j+1][s.LAST], j, j+1);
+            cost = s.cost[0][i-1];
+            concatenate(cost, s.cost[j][i], i-1, i);
+            concatenate(cost, s.cost[j+1][s.LAST], j, j+1);
             
-            if(delta.c < bestReversion.delta.c){
+            if(cost.c < bestReversion.cost.c){
                 bestReversion.i = i;
                 bestReversion.j = j;
-                bestReversion.delta = delta;
+                bestReversion.cost = cost;
             }
         }
     } 
 
-    // std::cout << "Cost: " << s.cost[0][s.LAST].c << "(" << getCurrentRealCost() << ")" << "\n"
-    //           << "Found: " << bestReversion.delta.c << "\n\n";
-
-    if(bestReversion.delta.c < s.cost[0][s.LAST].c){
+    if(bestReversion.cost.c < s.cost[0][s.LAST].c){
         std::reverse(s.route.begin() + bestReversion.i, s.route.begin() + bestReversion.j+1);
-        fillCost();
+        computeCost(bestReversion.i, bestReversion.j);
         timer.setTime(2);
         return true;
     }
@@ -254,7 +266,7 @@ bool MLP::revert(){
 // A function that searches for the best j position to reinsert a subsequence [i,num)
 bool MLP::reinsert(int num){ 
     tMove bestReinsertion = {0, 0, {0, 0, INFINITY}};
-    tCost delta;
+    tCost cost;
 
     timer.setTime(2+num);
     for(int i = 1; i < s.route.size() - num; i++){
@@ -262,33 +274,35 @@ bool MLP::reinsert(int num){
             // Checking if the j index is the same as the beginning of the subsequence
             if(j != i){       
                 if(j > i){
-                    delta = s.cost[0][i-1];
-                    concatenate(delta, s.cost[i+num][j], i-1, i+num);
-                    concatenate(delta, s.cost[i][i+(num-1)], j, i);
-                    concatenate(delta, s.cost[j+1][s.LAST], i+(num-1), j+1);
+                    cost = s.cost[0][i-1];
+                    concatenate(cost, s.cost[i+num][j], i-1, i+num);
+                    concatenate(cost, s.cost[i][i+(num-1)], j, i);
+                    concatenate(cost, s.cost[j+1][s.LAST], i+(num-1), j+1);
                 }else{
-                    delta = s.cost[0][j];
-                    concatenate(delta, s.cost[i][i+(num-1)], j, i);
-                    concatenate(delta, s.cost[j+1][i-1], i+(num-1), j+1);
-                    concatenate(delta, s.cost[i+num][s.LAST], i-1, i+num);
+                    cost = s.cost[0][j];
+                    concatenate(cost, s.cost[i][i+(num-1)], j, i);
+                    concatenate(cost, s.cost[j+1][i-1], i+(num-1), j+1);
+                    concatenate(cost, s.cost[i+num][s.LAST], i-1, i+num);
                 }
                 
-                if(delta.c < bestReinsertion.delta.c){
+                if(cost.c < bestReinsertion.cost.c){
                     bestReinsertion.i = i;
                     bestReinsertion.j = j;
-                    bestReinsertion.delta = delta;
+                    bestReinsertion.cost = cost;
                 }
             }
         }
     }
     
-    if(bestReinsertion.delta.c < s.cost[0][s.LAST].c){       
-        std::vector<int> subroute(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i + num);
-        
-        s.route.erase(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i + num);
-        s.route.insert(s.route.begin() + bestReinsertion.j, subroute.begin(), subroute.end());
-        
-        fillCost();
+    if(bestReinsertion.cost.c < s.cost[0][s.LAST].c){    
+        if (bestReinsertion.i < bestReinsertion.j){
+            std::rotate(s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i+num, s.route.begin() + bestReinsertion.j+num);
+            computeCost(bestReinsertion.i, bestReinsertion.j + num-1);
+        }
+        else{
+            std::rotate(s.route.begin() + bestReinsertion.j, s.route.begin() + bestReinsertion.i, s.route.begin() + bestReinsertion.i+num);
+            computeCost(bestReinsertion.j, bestReinsertion.i + num-1);
+        }
 
         timer.setTime(2+num);
         return true;
@@ -391,14 +405,5 @@ double MLP::getSolutionCost(tSolution &solution){
     
     return sum;
 }
-
-// double MLP::getSolutionCost(tSolution &sol){
-// 	double custo = 0;
-// 	for (int u = 0; u < dimension; u++){
-// 		custo += (dimension - u) * matrix[sol.route[u]][sol.route[u + 1]];
-// 	}
-
-// 	return custo;
-// }
 
 //------------============================================------------

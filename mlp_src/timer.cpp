@@ -1,4 +1,4 @@
-#include "Timer.h"
+#include "timer.h"
 
 Timer::Timer(){
     totalT0 = high_resolution_clock::now(); 

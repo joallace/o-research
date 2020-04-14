@@ -15,7 +15,7 @@ CCLNFLAGS = -lm -lpthread
 #############################
 
 #### diretorios com os source files e com os objs files
-SRCDIR = src
+SRCDIR = tsp_src
 OBJDIR = obj
 #############################
 

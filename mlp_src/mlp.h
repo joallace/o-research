@@ -5,14 +5,13 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
-#include "Structures.h"
-#include "Timer.h"
+#include "structures.h"
+#include "timer.h"
 
 #define IMAX 10
 #define SUBTOUR_SIZE 3
 #define NEIGHBORLIST_SIZE 5
 #define DEFAULT_NEIGHBORLIST {1, 2, 3, 4, 5}
-//#define DEFAULT_NEIGHBORLIST {3,4,5}
 #define LAST route.size()-1
 
 class MLP{
@@ -21,20 +20,18 @@ class MLP{
      int dimension;
      std::vector<int> candidateList;
      Timer timer;
-     //friend subCost subCost::operator+(const subCost& other) const;
 
      void construction(),
           fillCost(),
+          computeCost(int first, int last),
           perturb(),
-          concatenate(tCost &s1, const tCost &s2, int s1_last, int s2_first);
+          concatenate(tCost &s1, const tCost &s2, int s1_last, int s2_first) const;
 
      bool swap(),
           revert(),
           reinsert(int num);
-
-     // tCost concatenate(tCost &s1, tCost &s2, int last, int first);
          
-     int random(int num);
+     int random(int num) const;
 
      //-----===== Debugging functions =====-----
 

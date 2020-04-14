@@ -1,5 +1,5 @@
-#include "readData.h"
-#include "TSP.h"
+#include "read_data.h"
+#include "tsp.h"
 
 int main(int argc, char** argv) {
     double ** matrizAdj; // Adjacency matrix
