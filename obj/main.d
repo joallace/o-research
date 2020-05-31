@@ -1,2 +1,2 @@
-obj/main.o: tsp_src/main.cpp tsp_src/read_data.h tsp_src/tsp.h \
- tsp_src/timer.h
+obj/main.o: src/main.cpp src/read_data.h src/mlp.h src/problem.h src/timer.h \
+ src/structures.h src/tsp.h

@@ -7,14 +7,10 @@ using namespace std::chrono;
 
 class Timer{
     high_resolution_clock::time_point t0, t1, totalT0, totalT1;  //Variables used to measure the time delta
-    bool hasRun[6] = {};
-    double construction,
-           swap,
-           revert,
-           reinsertion1,
-           reinsertion2,
-           reinsertion3,
-           total;
+
+    int64_t durations[7] = {};
+
+    bool hasRun;
 
     public:
         Timer();
@@ -30,6 +26,8 @@ class Timer{
                getReinsertion2Time(),
                getReinsertion3Time(),
                getTotalTime();
+
+        int64_t* getPointer();
 };
 
 

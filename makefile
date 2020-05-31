@@ -1,5 +1,5 @@
 # Define o executavel
-TARGET = mlp
+TARGET = solver
 
 #detecta se o sistema é de 32 ou 64 bits
 BITS_OPTION = -m64
@@ -18,7 +18,7 @@ CCLNFLAGS = -lm -lpthread
 #############################
 
 #### diretorios com os source files e com os objs files
-SRCDIR = mlp_src
+SRCDIR = src
 OBJDIR = obj
 #############################
 

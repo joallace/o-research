@@ -10,30 +10,11 @@ double CalcDistAtt ( double *X, double *Y, int I, int J );
 void CalcLatLong ( double *X, double *Y, int n, double *latit, double* longit );
 double CalcDistGeo ( double *latit, double *longit, int I, int J );
 
-void readData( int argc, char** argv, int* Dimension, double ***Mdist )
-{
-
-     if (argc < 2) {
-         cout << "\nERROR: Missing parameters\n";
-         cout << " ./tsp [Instance] -optional flags"<< endl;
-         exit(1);
-     }
-
-     if (argc > 3) {
-          cout << "\nERROR: Too many parameters\n";
-          cout << " ./tsp [Instance] -optional flags" << endl;
-         exit(1);
-     }
-
+void readData( char *instance, int* dimension, double ***matrix ){
     int N;
     string arquivo, ewt;
 
-     char *instancia = argv[1];
-
-     //ifstream in(argv[1], ios::in);
-
-
-    ifstream in( instancia, ios::in);
+    ifstream in( instance, ios::in);
 
 	if (!in) {
 		cout << "ERROR: Could not open file!\n";
@@ -76,7 +57,7 @@ void readData( int argc, char** argv, int* Dimension, double ***Mdist )
         in >> ewf;
 
         if ( ewf == "FUNCTION" ) {
-            cout << "FUNCTION - Nao suportado!" << endl; }
+            cout << "FUNCTION - Not supported!" << endl; }
 
         else if ( ewf == "FULL_MATRIX" ) {
 
@@ -253,19 +234,19 @@ void readData( int argc, char** argv, int* Dimension, double ***Mdist )
     }
 
     else if ( ewt == "EUD_3D" ) {
-        cout << "EUC_3D - Nao suportado!" << endl; }
+        cout << "EUC_3D - Not supported!" << endl; }
 
     else if ( ewt == "MAX_2D" ) {
-        cout << "MAX_2D - Nao suportado!" << endl; }
+        cout << "MAX_2D - Not supported!" << endl; }
 
     else if ( ewt == "MAX_3D" ) {
-        cout << "MAX_3D - Nao Suportado!" << endl; }
+        cout << "MAX_3D - Not supported!" << endl; }
 
     else if ( ewt == "MAN_2D" ) {
-        cout << "MAN_2D - Nao suportado!" << endl; }
+        cout << "MAN_2D - Not supported!" << endl; }
 
     else if ( ewt == "MAN_3D" ) {
-        cout << "MAN_3D - Nao Suportado!" << endl; }
+        cout << "MAN_3D - Not supported!" << endl; }
 
     else if ( ewt == "CEIL_2D" ) {
 
@@ -338,16 +319,16 @@ void readData( int argc, char** argv, int* Dimension, double ***Mdist )
     }
 
     else if ( ewt == "XRAY1" ) {
-        cout << "XRAY1 - Nao suportado!" << endl; }
+        cout << "XRAY1 - Not supported!" << endl; }
 
     else if ( ewt == "XRAY2" ) {
-        cout << "XRAY2 - Nao suportado!" << endl; }
+        cout << "XRAY2 - Not supported!" << endl; }
 
     else if ( ewt == "SPECIAL" ) {
-        cout << "SPECIAL - Nao suportado!" << endl; }
+        cout << "SPECIAL - Not supported!" << endl; }
 
-    *Dimension = N;
-    *Mdist = dist;
+    *dimension = N;
+    *matrix = dist;
 }
 
 double CalcDistEuc ( double *X, double *Y, int I, int J )
