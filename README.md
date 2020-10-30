@@ -1,80 +1,28 @@
 # o-research
-A bass tab generator using a LSTM approach
 
-## Contents
-- [Motivation](#Motivation)
-- [Dependencies](#Dependencies)
-- [Data](#Data)
-- [Scripts](#Scripts)
+An Operations Research repo that contains implementations of the *Travelling Salesman Problem* (TSP) and *Minimum Latency Problem* (MLP) solvers. Current implemented solving strategies are the [GILS-RVND](https://www.sciencedirect.com/science/article/abs/pii/S037722171200269X) metaheuristic and the Branch and Bound algorithm.
 
-## Motivation
 
-The purpose of this Artificial Intelligence project is to create bass riffs based on playing patterns from different bands and musics from the *funk rock* genre.
+## Compilation
 
-## Dependencies
-This software depends on the following third party libraries to be executed:
-- **[TensorFlow](https://www.tensorflow.org/)**: version 2.0 or later
+To compile this code, you just need to tu run the following command:
 ```shell
-$ pip install tensorflow
+$ make
 ```
-- **[PyGuitarPro](https://github.com/Perlence/PyGuitarPro)**: version 0.6 or later
+
+## Execution
+
+In order to solve an instance, run the command below:
 ```shell
-$ pip install PyGuitarPro
+$ ./solver path/to/instance.tsp --[mlp/tsp/bb] [-b]
 ```
 
-## Scripts
-First of all, I would like to point out that when referring to the **.gpx** format, I am actually referring to the Guitar Pro .gp3, .gp4 and .gp5 formats\
-The execution of the scripts is done exclusively in the terminal. Below are their descriptions.
+### Execution Parameters
 
-### bass_ripper.py
+- --mlp: Will solve the instance as a MLP trough the use of the GILS-RVND metaheuristic.
 
-This script makes it possible to *rip* the bass track from .gpx files in a certain directory.
+- --tsp: Will solve the instance as a TSP trough the use of the GILS-RVND metaheuristic.
 
-```bash
-python bass_ripper.py [input dir] [output dir]
-```
-**ALWAYS** perform the *rip* of the bass tracks before converting any file.
+- --bb: Will solve the instance as a TSP trough the use of the Branch and Bound algorithm.
 
-### converter.py
-This script, as its name suggests, will be responsible for converting files. There are two execution methods, from .gpx to .txt and from .txt to .gpx.
-
-**Conversion to .txt:**
-
-Specifying an output file is optional, the default output is "output.txt".
-```bash
-python converter.py [-t or --txt] [input dir] [output file]
-```
-The generated file will be written as follows: (see [PyGuitarPro docs](https://pyguitarpro.readthedocs.io) for better understanding)
-
-1. Beat
-
-```bash
-b D OT NM
-```
-A line that represents a beat will always start with a **b**, and will have the five following parameters:
- - D: duration of the beat
- - O: specifies if the note is dotted
- - T: type of the beat 
- - E: tuplet enters
- - M: tuplet tempo
-
-
-2. Note
-
-```bash
-n S N THL
-```
-A line that represents a note will always start with a **n**, and will have the five following parameters:
- - S: bass string
- - N: played note
- - T: note type
- - H: presence of hammer-on
- - L: presence of slide
-
-**Conversion to .gpx:**
-
-Specifying an output file is optional, the default output is "output.gp5". Note that it is preferable to generate files with the **.gp5** extension
-
-```bash
-python converter.py [-g or --gpx] [input file] [output file]
-```
+- -b: Will execute the code in *benchmark* mode, returning some useful metrics about execution time and results.
