@@ -1,6 +1,6 @@
-#include "tsp.h"
+#include "include/tsp.h"
 
-TSP::TSP(double ***mPointer, int dimension): Problem(mPointer, dimension){
+TSP::TSP(double ***matrix_pointer, int dimension, int iterations): MetaheuristicProblem(matrix_pointer, dimension){
     final_.cost = INFINITY;
     
     // Defining variables
@@ -8,13 +8,12 @@ TSP::TSP(double ***mPointer, int dimension): Problem(mPointer, dimension){
     std::vector<char> neighbor_list;
 
     // GILS
-    for(int i_max = 0; i_max < TSP_IMAX; i_max++){
+    for(int i_max = 0; i_max < iterations; i_max++){
         s_.cost = 0;
 
         // Filling up the candidate list
         for(i = 0; i < dimension_; i++)
             candidate_list_.push_back(i);
-
 
         // Construction
         timer_.setTime(0);
@@ -72,9 +71,8 @@ TSP::TSP(double ***mPointer, int dimension): Problem(mPointer, dimension){
                 best_ = s_;
                 i_ils = 0;
             }
-            else{
+            else
                 s_ = best_;
-            }
 
             perturb();
         }
@@ -153,18 +151,16 @@ bool TSP::swap(){
         rm_delta = -matrix_[s_.route[i]][s_.route[i-1]]
                    -matrix_[s_.route[i]][s_.route[i+1]];
         for(int j = i + 2; j < s_.route.size() - 1; j++){
-                delta =  rm_delta
-                        +matrix_[s_.route[i]][s_.route[j-1]]
-                        +matrix_[s_.route[i]][s_.route[j+1]]
-                        +matrix_[s_.route[j]][s_.route[i-1]]
-                        +matrix_[s_.route[j]][s_.route[i+1]]
-                        -matrix_[s_.route[j]][s_.route[j-1]]
-                        -matrix_[s_.route[j]][s_.route[j+1]];
-                 
+            delta =  rm_delta
+                    +matrix_[s_.route[i]][s_.route[j-1]]
+                    +matrix_[s_.route[i]][s_.route[j+1]]
+                    +matrix_[s_.route[j]][s_.route[i-1]]
+                    +matrix_[s_.route[j]][s_.route[i+1]]
+                    -matrix_[s_.route[j]][s_.route[j-1]]
+                    -matrix_[s_.route[j]][s_.route[j+1]];
             
-            if(delta < 0 && delta < best_swap.cost){
+            if(delta < 0 && delta < best_swap.cost)
                 best_swap = {i, j, delta};
-            }
         }
     }
 
@@ -193,9 +189,8 @@ bool TSP::revert(){
                     -matrix_[s_.route[i]][s_.route[i-1]]
                     -matrix_[s_.route[j]][s_.route[j+1]];
             
-            if(delta < 0 && delta < best_reversion.cost){
+            if(delta < 0 && delta < best_reversion.cost)
                 best_reversion = {i, j, delta};
-            }
         }
     } 
 
@@ -234,9 +229,8 @@ bool TSP::reinsert(int num){
                             +matrix_[s_.route[i+(num-1)]][s_.route[j]] 
                             -matrix_[s_.route[j]][s_.route[j-1]];
                 
-                if(delta < 0 && delta < best_reinsertion.cost){
+                if(delta < 0 && delta < best_reinsertion.cost)
                     best_reinsertion = {i, j, delta};
-                }
             }
         }
     }
@@ -284,7 +278,11 @@ void TSP::perturb(){
                +matrix_[s_.route[j+j_size]][s_.route[j+j_size+1]];
 }
 
+tSolution<double> TSP::getSolution(){
+    return final_;
+}
 
+// Returns the final cost
 double TSP::getCost(){
     return final_.cost;
 }
@@ -308,6 +306,5 @@ double TSP::getSolutionCost(tSolution<double> &solution){
 }
 
 void TSP::printSolution(){
-    for(int i = 0; i <= dimension_; i++)
-        printf("%d%s", final_.route[i]+1, i == dimension_?"\n":", ");
+    printRoute(final_.route);
 }

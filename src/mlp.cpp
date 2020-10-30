@@ -1,11 +1,8 @@
-#include "mlp.h"
+#include "include/mlp.h"
 
-MLP::MLP(double ***mPointer, int dimension): Problem(mPointer, dimension){
+MLP::MLP(double ***matrix_pointer, int dimension): MetaheuristicProblem(matrix_pointer, dimension){
     // Allocating the cost vectors
     s_.cost.resize(dimension_+1, std::vector<tCost>(dimension_+1));
-    // best_.cost.resize(dimension_+1, std::vector<tCost>(dimension_+1));
-    // final_.cost.resize(dimension_+1, std::vector<tCost>(dimension_+1));
-    // final_.cost[0][final_.LAST].c = INFINITY;
     
     // Defining variables
     int i, max_iterations = std::min(100, dimension_);
@@ -339,7 +336,6 @@ double MLP::getSolutionCost(tSolution<std::vector<std::vector<tCost>>> &solution
 }
 
 void MLP::printSolution(){
-    for(int i = 0; i <= dimension_; i++)
-        printf("%d%s", final_.route[i]+1, i == dimension_?"\n":", ");
+    printRoute(final_.route);
 }
 

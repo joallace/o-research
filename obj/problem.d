@@ -1,1 +1,1 @@
-obj/problem.o: src/problem.cpp src/problem.h src/timer.h
+obj/problem.o: src/problem.cpp src/include/problem.h src/include/timer.h

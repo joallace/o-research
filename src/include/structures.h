@@ -2,6 +2,7 @@
 #define STRUCTURES_H
 
 #include <vector>
+// #include <utility>
 
 // A structure that stores the cost from a certain move involving i and j
 template <typename T>
@@ -25,6 +26,13 @@ template <typename T>
 struct tSolution{
     std::vector<int> route;
     T cost;
+};
+
+// A structure that represents a BB node
+struct tNode{
+    std::vector<std::pair<int,int>> forbidden;
+    double cost;
+    // tNode(): forbidden({}), cost(INFINITY) {};
 };
 
 #endif // STRUCTURES_H

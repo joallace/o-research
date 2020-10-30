@@ -44,6 +44,8 @@
         "typeinfo": "cpp",
         "cstring": "cpp",
         "map": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "list": "cpp",
+        "bitset": "cpp"
     }
 }

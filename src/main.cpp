@@ -1,6 +1,7 @@
-#include "read_data.h"
-#include "mlp.h"
-#include "tsp.h"
+#include "include/read_data.h"
+#include "include/mlp.h"
+#include "include/tsp.h"
+#include "include/bb.h"
 
 #include <cstring>
 #include <ctime>
@@ -25,9 +26,13 @@ Problem* newProblem(){
             case 't':
                 return new TSP(&matrix, dimension);
                 break;
+
+            case 'b':
+                return new BB(&matrix, dimension);
+                break;
             
             default:
-                std::cout << "Specify the problem type with --mlp or --tsp\n";
+                std::cout << "Specify the problem type with --mlp or --tsp or --bb\n";
                 exit(1);
                 break;
     }
@@ -86,6 +91,7 @@ void argParse(int argc, char** argv){
 
         if(strstr(argv[i], "--") == argv[i]){
             arguments.mode = argv[i][2];
+            continue;
         }
 
         if(!strcmp(argv[i], "-b")){
@@ -119,7 +125,7 @@ int main(int argc, char** argv) {
             p->printSolution();
         }
 
-        std::cout << "Total cost: " << p->getCost() << " (" << p->getRealCost() << ")\n\n";
+        std::cout << "Total cost: " << p->getCost() << "\n\n";
 
         p->printTimes();
     }

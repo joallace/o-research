@@ -1,1 +1,1 @@
-obj/timer.o: src/timer.cpp src/timer.h
+obj/timer.o: src/timer.cpp src/include/timer.h
